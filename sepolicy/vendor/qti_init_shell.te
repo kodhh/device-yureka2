@@ -1,0 +1,19 @@
+dontaudit qti_init_shell self:capability dac_override;
+
+allow qti_init_shell proc_touchpanel:dir { r_dir_perms setattr };
+allow qti_init_shell proc_touchpanel:file { getattr setattr };
+
+# Allow access to swappiness
+allow qti_init_shell proc_swap:file { open write };
+
+# Allow adjust page_cluster setting
+allow qti_init_shell proc_page_cluster:file { open write };
+
+# Postboot
+allow qti_init_shell sysfs:file { write setattr };
+
+# Required for FM
+allow qti_init_shell self:socket create;
+
+allow qti_init_shell vendor_radio_data_file:dir create_dir_perms;
+allow qti_init_shell vendor_radio_data_file:file create_file_perms;
