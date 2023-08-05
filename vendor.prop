@@ -133,3 +133,6 @@ wifi.interface=wlan0
 
 # Wifi-Display
 persist.sys.wfd.virtual=0
+
+# Fuse
+persist.sys.fuse.passthrough.enable=true
