@@ -13,7 +13,5 @@
      limitations under the License.
 -->
 <resources>
-    <!-- Battery life saver -->
-    <!-- Disable this if your device does not support input_suspend or charging_enabled -->
-    <bool name="config_smartChargingAvailable">true</bool>
+    <bool name="config_supportSmartCharging">true</bool>
 </resources>
