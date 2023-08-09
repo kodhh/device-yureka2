@@ -1,6 +1,18 @@
 allow mm-qcamerad camera_socket:dir w_dir_perms;
 allow mm-qcamerad camera_socket:sock_file w_file_perms;
 
+allow mm-qcamerad property_socket:sock_file { read write };
+
+allow mm-qcamerad system_server:unix_stream_socket { read write };
+
 allow mm-qcamerad diag_device:chr_file { ioctl open read write };
 
+allow mm-qcamerad vendor_camera_data_file:file { create open read write getattr };
+
+allow mm-qcamerad vendor_camera_data_file:dir { write add_name remove_name search };
+
+allow mm-qcamerad vendor_camera_data_file:sock_file { create unlink };
+
 allow mm-qcamerad { sysfs_jpeg }:file r_file_perms;
+
+allow mm-qcamerad system_server:unix_stream_socket { write read };

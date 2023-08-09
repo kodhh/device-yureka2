@@ -180,7 +180,7 @@ PRODUCT_PACKAGES += \
     libcamshim \
     libmm-qcamera \
     libgui_vendor \
-    Camera2
+    GoogleCameraGo
 
 # Libshims
 PRODUCT_PACKAGES += \
@@ -219,6 +219,10 @@ PRODUCT_PACKAGES += \
     vendor.display.config@1.0.vendor \
     vendor.qti.hardware.display.allocator-service \
     vendor.qti.hardware.display.mapper@2.0.vendor
+
+# Device-specific settings
+PRODUCT_PACKAGES += \
+    XiaomiParts
 
 # DRM
 PRODUCT_PACKAGES += \
