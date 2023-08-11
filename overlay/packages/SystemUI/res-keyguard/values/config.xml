@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 /*
-**
-** Copyright 2015 The Android Open Source Project
+** Copyright 2014, The Android Open Source Project
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,14 +16,11 @@
 ** limitations under the License.
 */
 -->
+
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Threshold in micro watts below which a charger is rated as "slow"; .8A @ 4.4V -->
+    <integer name="config_chargingSlowlyThreshold">3520000</integer>
 
-    <!-- IDs for each color mode. The values must match the corresponding constants in
-         android.view.Display -->
-    <integer-array name="color_mode_ids">
-        <item>0</item>
-        <item>-1</item>
-        <item>-1</item>
-    </integer-array>
-
+    <!-- Threshold in micro watts above which a charger is rated as "fast"; 1.1A @ 4.4V  -->
+    <integer name="config_chargingFastThreshold">4840000</integer>
 </resources>
