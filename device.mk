@@ -241,7 +241,7 @@ PRODUCT_PACKAGES += \
 # FM
 PRODUCT_PACKAGES += \
     RevampedFMRadio \
-    libqcomfmjni
+    libqcomfmjni:64
 
 # Fwk-detect
 PRODUCT_PACKAGES += \
