@@ -113,6 +113,7 @@ ro.se.type=HCE,UICC
 
 # Radio
 persist.radio.multisim.config=dsds
+persist.sys.fflag.override.settings_provider_model=false
 persist.vendor.data.iwlan.enable=true
 persist.vendor.radio.add_power_save=1
 persist.vendor.radio.apm_sim_not_pwdn=1
@@ -152,3 +153,6 @@ wifi.interface=wlan0
 
 # Wifi-Display
 persist.sys.wfd.virtual=0
+
+# Fuse
+persist.sys.fuse.passthrough.enable=true

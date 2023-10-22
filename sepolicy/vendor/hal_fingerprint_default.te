@@ -1,4 +1,4 @@
-typeattribute hal_fingerprint_default binder_in_vendor_violators;
+typeattribute hal_fingerprint_default data_between_core_and_vendor_violators;
 
 # Allow Binder communication
 vndbinder_use(hal_fingerprint_default)
@@ -38,7 +38,7 @@ allow hal_fingerprint_default keystore:keystore_key { add_auth };
 r_dir_file(hal_fingerprint_default, firmware_file)
 
 # Allow read/write property
-set_prop(hal_fingerprint_default, system_prop)
+set_prop(hal_fingerprint_default, vendor_fp_prop)
 
 allow hal_fingerprint_default storage_file:dir { search };
 allow hal_fingerprint_default storage_file:lnk_file { read };
@@ -46,3 +46,8 @@ allow hal_fingerprint_default mnt_user_file:dir { search };
 allow hal_fingerprint_default mnt_user_file:lnk_file { read };
 allow hal_fingerprint_default sdcardfs:dir { search };
 allow hal_fingerprint_default sdcardfs:file { getattr };
+
+# Allow fp to read boot status prop
+get_prop(hal_fingerprint_default, boot_status_prop)
+
+dontaudit hal_fingerprint_default default_android_vndservice:service_manager find;

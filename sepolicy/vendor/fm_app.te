@@ -26,3 +26,6 @@
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 set_prop(vendor_fm_app, vendor_fm_prop)
+set_prop(vendor_fm_app, ctl_start_prop)
+set_prop(vendor_fm_app, ctl_stop_prop)
+allow vendor_fm_app fm_radio_device:chr_file { read write open ioctl };

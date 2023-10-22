@@ -1,27 +1,18 @@
-typeattribute mm-qcamerad binder_in_vendor_violators;
-typeattribute mm-qcamerad socket_between_core_and_vendor_violators;
-typeattribute mm-qcamerad data_between_core_and_vendor_violators;
+allow mm-qcamerad camera_socket:dir w_dir_perms;
+allow mm-qcamerad camera_socket:sock_file w_file_perms;
 
-binder_use(mm-qcamerad);
-
-allow mm-qcamerad sensorservice_service:service_manager find;
+allow mm-qcamerad property_socket:sock_file { read write };
 
 allow mm-qcamerad system_server:unix_stream_socket { read write };
 
 allow mm-qcamerad diag_device:chr_file { ioctl open read write };
 
-allow mm-qcamerad system_server:unix_stream_socket { write read };
-
-allow mm-qcamerad camera_data_file:dir { write add_name remove_name search };
-allow mm-qcamerad camera_data_file:file { create open read write getattr };
-allow mm-qcamerad camera_data_file:sock_file { create unlink };
+allow mm-qcamerad vendor_camera_data_file:file { create open read write getattr };
 
 allow mm-qcamerad vendor_camera_data_file:dir { write add_name remove_name search };
-allow mm-qcamerad vendor_camera_data_file:file { create open read write getattr };
+
 allow mm-qcamerad vendor_camera_data_file:sock_file { create unlink };
 
-allow mm-qcamerad servicemanager:binder { call };
-allow mm-qcamerad binder_device:chr_file { ioctl read write open };
-allow mm-qcamerad vendor_audio_prop:file { open read getattr execute };
+allow mm-qcamerad { sysfs_jpeg }:file r_file_perms;
 
-allow mm-qcamerad video_device:chr_file { ioctl read write open };
+allow mm-qcamerad system_server:unix_stream_socket { write read };
