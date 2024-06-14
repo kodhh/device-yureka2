@@ -25,7 +25,7 @@ PRODUCT_COMPRESSED_APEX := false
 
 # Overlays
 DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
-DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay-arrow
+DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay-lineage
 
 # Screen density
 PRODUCT_AAPT_CONFIG := normal
@@ -240,8 +240,9 @@ PRODUCT_PACKAGES += \
 
 # FM
 PRODUCT_PACKAGES += \
-    RevampedFMRadio \
-    libqcomfmjni:64
+    FM2 \
+    libqcomfm_jni \
+    qcom.fmradio
 
 # Fwk-detect
 PRODUCT_PACKAGES += \
@@ -363,7 +364,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     android.hardware.power@1.2.vendor \
     android.hardware.power-service-qti \
-    android.hardware.power.stats@1.0-service.mock \
     vendor.qti.hardware.perf@2.2.vendor
 
 PRODUCT_COPY_FILES += \
@@ -422,7 +422,7 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     android.hardware.thermal@1.0-impl:64 \
     android.hardware.thermal@1.0-service \
-    thermal.msm8953
+    thermal.msm8953:64
 
 # Touch features
 PRODUCT_PACKAGES += \
@@ -446,7 +446,22 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_COPY_FILES += \
     vendor/qcom/opensource/vibrator/excluded-input-devices.xml:$(TARGET_COPY_OUT_VENDOR)/etc/excluded-input-devices.xml
-    
+
+# Always preopt extracted APKs to prevent extracting out of the APK
+# for gms modules.
+PRODUCT_ALWAYS_PREOPT_EXTRACTED_APK := true
+PRODUCT_ART_TARGET_INCLUDE_DEBUG_BUILD := false
+PRODUCT_MINIMIZE_JAVA_DEBUG_INFO := true
+USE_DEX2OAT_DEBUG := false
+
+# Speed profile services and wifi-service to reduce RAM and storage
+PRODUCT_SYSTEM_SERVER_COMPILER_FILTER := speed-profile
+
+# Speed up
+PRODUCT_DEXPREOPT_SPEED_APPS += \
+    Settings \
+    SystemUI
+
 # VNDK
 PRODUCT_PACKAGES += \
     libstdc++.vendor

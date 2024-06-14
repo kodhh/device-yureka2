@@ -47,6 +47,7 @@ LOCAL_CFLAGS += -DSYSTEM_HEADER_PREFIX=sys
 
 LOCAL_CFLAGS += -DHAS_MULTIMEDIA_HINTS -D_ANDROID
 
+LOCAL_CFLAGS += -Wno-unused-variable -Wno-unused-parameter -DVANILLA_HAL
 
 #use media extension
 ifeq ($(TARGET_USES_MEDIA_EXTENSIONS), true)

@@ -71,9 +71,6 @@ vendor.vidc.enc.disable_bframes=1
 vendor.vidc.enc.disable.pq=true
 vendor.video.disable.ubwc=1
 
-# Mwqem
-persist.vendor.mwqem.enable=1
-
 # Perf
 ro.vendor.qti.sys.fw.bservice_enable=true
 
@@ -99,6 +96,10 @@ vendor.display.disable_scaler=1
 
 # Shutdown
 ro.build.shutdown_timeout=2
+
+# Deep Sleep
+pm.sleep_mode=1
+vendor.post_boot.parsed=1
 
 # Skia
 # (b/183612348): Enable skia reduceOpsTaskSplitting

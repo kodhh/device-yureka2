@@ -12,3 +12,6 @@ allow radio hal_cacert_hwservice:hwservice_manager find;
 allow radio hal_datafactory_hwservice:hwservice_manager find;
 
 set_prop(radio, system_prop)
+
+# Zygote
+allow radio zygote:unix_stream_socket getopt;

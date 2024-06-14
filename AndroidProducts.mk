@@ -14,9 +14,9 @@
 # limitations under the License.
 
 PRODUCT_MAKEFILES := \
-    $(LOCAL_DIR)/arrow_YUREKA2.mk
+    $(LOCAL_DIR)/lineage_YUREKA2.mk
 
 COMMON_LUNCH_CHOICES := \
-    arrow_YUREKA2-user \
-    arrow_YUREKA2-userdebug \
-    arrow_YUREKA2-eng
+    lineage_YUREKA2-user \
+    lineage_YUREKA2-userdebug \
+    lineage_YUREKA2-eng
