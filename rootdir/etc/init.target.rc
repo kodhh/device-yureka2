@@ -64,14 +64,6 @@ on init
     write /dev/stune/top-app/schedtune.colocate 1
     write /sys/module/qpnp_rtc/parameters/poweron_alarm 1
 
-    # Add a cpuset for the camera daemon
-    mkdir /dev/cpuset/camera-daemon 0750 cameraserver cameraserver
-    write /dev/cpuset/camera-daemon/cpus 0-7
-    write /dev/cpuset/camera-daemon/mems 0
-    chown cameraserver cameraserver /dev/cpuset/camera-daemon/tasks
-    chmod 0660 /dev/cpuset/camera-daemon/tasks
-    chown system system /sys/kernel/hbtp/display_pwr
-
 on post-fs
     # set RLIMIT_MEMLOCK to 64MB
     setrlimit 8 67108864 67108864
@@ -88,7 +80,6 @@ service vendor.qcamerasvr /vendor/bin/mm-qcamera-daemon
     class late_start
     user camera
     group camera system inet input graphics
-    setenv LD_PRELOAD "/vendor/lib/libshim_pthreadts.so:/vendor/lib/libshim_mutexdestroy.so"
     task_profiles ServiceCapacityLow
 
 #Start up peripheral manager
@@ -120,19 +111,23 @@ service vendor.qseecomd /vendor/bin/qseecomd
    task_profiles ServiceCapacityLow
 
 service thermal-engine /vendor/bin/thermal-engine
-   class main
-   user root
-   socket thermal-send-client stream 0666 system system
-   socket thermal-recv-client stream 0660 system system
-   socket thermal-recv-passive-client stream 0666 system system
-   socket thermal-send-rule stream 0660 system system
-   group root
+    class main
+    user root
+    group root
+    socket thermal-send-client stream 0660 system oem_2907
+    socket thermal-recv-client stream 0660 system oem_2907
+    socket thermal-recv-passive-client stream 0660 system oem_2907
+    socket thermal-send-rule stream 0660 system oem_2907
 
-service wcnss-service /vendor/bin/wcnss_service
+on property:sys.boot_completed=1
+    restart thermal-engine
+
+service vendor.wcnss-service /vendor/bin/wcnss_service
     class main
     user system
     group system wifi radio
     oneshot
+    task_profiles ServiceCapacityLow
 
 on property:init.svc.surfaceflinger=stopped
     stop ppd
@@ -168,6 +163,14 @@ on charger
     restart thermal-engine
 
 on boot
+    # Add a cpuset for the camera daemon
+    mkdir /dev/cpuset/camera-daemon 0750 cameraserver cameraserver
+    write /dev/cpuset/camera-daemon/cpus 0-7
+    write /dev/cpuset/camera-daemon/mems 0
+    chown cameraserver cameraserver /dev/cpuset/camera-daemon/tasks
+    chmod 0660 /dev/cpuset/camera-daemon/tasks
+    chown system system /sys/kernel/hbtp/display_pwr
+
 # access permission for wlan
     chown system system /mnt/vendor/persist/WCNSS_qcom_wlan_nv.bin
 
