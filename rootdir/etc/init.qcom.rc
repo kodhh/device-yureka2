@@ -51,9 +51,6 @@ on init
     write /sys/bus/msm_subsys/devices/subsys3/restart_level RELATED
     write /sys/bus/msm_subsys/devices/subsys4/restart_level RELATED
 
-on post-fs
-    chmod 0755 /sys/kernel/debug/tracing
-
 on early-boot
     # Allow subsystem (modem etc) debugging
     write /sys/kernel/boot_adsp/boot 1
@@ -77,10 +74,8 @@ on early-boot
 on boot
     chown system system /sys/bus/i2c/devices/3-0038/set_cover_mode
     chmod 0660 /sys/bus/i2c/devices/3-0038/set_cover_mode
-    chown system system /sys/module/radio_iris_transport/parameters/fmsmd_set
     chown system system /sys/kernel/boot_slpi/ssr
     chown system system /sys/kernel/boot_adsp/ssr
-    chmod 0660 /sys/module/radio_iris_transport/parameters/fmsmd_set
     chown system system /sys/devices/soc/78b7000.i2c/i2c-3/3-0038/enable_dt2w
     chmod 0664 /sys/devices/soc/78b7000.i2c/i2c-3/3-0038/enable_dt2w
 
@@ -174,8 +169,6 @@ on post-fs-data
     mkdir /data/vendor/audio/acdbdata 0770 media audio
     mkdir /data/vendor/audio/acdbdata/delta 0770 media audio
 
-    setprop vold.post_fs_data_done 1
-
     #Create FM dir for patchdownloader
     mkdir /data/vendor/fm 0770 system system
     chmod 0770 /data/vendor/fm
@@ -212,6 +205,10 @@ on post-fs-data
     chown radio radio /data/vendor/radio/db_check_done
     chmod 0660 /data/vendor/radio/db_check_done
 
+    # keep that at the end of on post-fs-data
+    # Set indication (checked by vold) that we have finished this action
+    setprop vold.post_fs_data_done 1
+
 on property:ro.vendor.iocgrp.config=1
     mkdir /dev/blkio
     mount cgroup none /dev/blkio blkio
@@ -231,43 +228,25 @@ on property:sys.boot_completed=1
     write /sys/block/dm-1/queue/read_ahead_kb 512
     #Reinit lmkd to reconfigure lmkd properties
     setprop lmkd.reinit 1
-    # Start perf
-    setprop vendor.post_boot.parsed 1
-
-on property:persist.vendor.radio.atfwd.start=false
-    stop vendor.atfwd
-
-on property:vendor.radio.atfwd.start=false
-    stop vendor.atfwd
 
 # DSDS - Restart qcrild on data switch
 on property:persist.sys.radio.mobile_data_swap=1
+    exec /bin/sleep 3s
     restart vendor.qcrild
-    exec /bin/sleep 2
     restart vendor.qcrild2
+
+# FM
+on property:hw.fm.init=0
+    write /sys/module/radio_iris_transport/parameters/fmsmd_set 0
+
+on property:hw.fm.init=1
+    write /sys/module/radio_iris_transport/parameters/fmsmd_set 1
 
 service qcom-c_main-sh /vendor/bin/init.class_main.sh
     class main
     user root
     group root system
     oneshot
-
-on property:vold.decrypt=trigger_shutdown_framework
-    stop vendor.gnss_service
-    stop vendor.camera-provider-2-4
-    stop vendor.fps_hal
-    stop wcnss-service
-    stop vendor.qcrild
-    stop vendor.qcrild2
-
-on property:vold.decrypt=trigger_restart_framework
-    stop vendor.camera-provider-2-4
-    restart vendor.fps_hal
-    start wcnss-service
-    restart vendor.qcrild
-    exec /bin/sleep 2
-    restart vendor.qcrild2
-    restart vendor.gnss_service
 
 service vendor.qrtr-ns /vendor/bin/qrtr-ns -f
     class core
@@ -280,17 +259,14 @@ service vendor.irsc_util /vendor/bin/irsc_util "/vendor/etc/sec_config"
     user root
     oneshot
 
-service vendor.atfwd /vendor/bin/ATFWD-daemon
-    class late_start
-    user system
-    group system radio
-    task_profiles ServiceCapacityLow
-
 service loc_launcher /vendor/bin/loc_launcher
     class late_start
     user gps
     group gps
     task_profiles ServiceCapacityLow
+
+on property:persist.sys.xtra-daemon.enabled=*
+    restart loc_launcher
 
 service qcom-sh /vendor/bin/init.qcom.sh
     class late_start
@@ -311,13 +287,6 @@ service vendor.qcom-post-boot /vendor/bin/init.qcom.post_boot.sh
 on property:sys.boot_completed=1
     start vendor.qcom-post-boot
     start vendor.camera-provider-2-4
-
-service vendor.charger /system/bin/chargeonlymode
-    class charger
-    user system
-    group system graphics input
-    capabilities SYS_BOOT
-    seclabel u:r:charger:s0
 
 service vendor.msm_irqbalance /vendor/bin/msm_irqbalance -f /vendor/etc/msm_irqbalance.conf
     class core
