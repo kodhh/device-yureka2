@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 - 2020, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013 - 2021, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,6 +27,42 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*
+* Changes from Qualcomm Innovation Center are provided under the following license:
+*
+* Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted (subject to the limitations in the
+* disclaimer below) provided that the following conditions are met:
+*
+*    * Redistributions of source code must retain the above copyright
+*      notice, this list of conditions and the following disclaimer.
+*
+*    * Redistributions in binary form must reproduce the above
+*      copyright notice, this list of conditions and the following
+*      disclaimer in the documentation and/or other materials provided
+*      with the distribution.
+*
+*    * Neither the name of Qualcomm Innovation Center, Inc. nor the names of its
+*      contributors may be used to endorse or promote products derived
+*      from this software without specific prior written permission.
+*
+* NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE
+* GRANTED BY THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT
+* HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+* WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+* MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+* IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+* ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+* GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+* IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+* OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+* IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 #define LOG_TAG "audio_hw_spkr_prot"
 /*#define LOG_NDEBUG 0*/
 #define LOG_NDDEBUG 0
@@ -45,6 +81,7 @@
 #include <dlfcn.h>
 #include <math.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <cutils/properties.h>
 #include "audio_extn.h"
 #include <linux/msm_audio_calibration.h>
@@ -552,14 +589,8 @@ static int set_spkr_prot_cal(int cal_fd,
         ALOGD("%s: quick calibration enabled", __func__);
         cal_data.cal_type.cal_info.quick_calib_flag = 1;
     } else {
-        property_get("persist.spkr.cal.duration", value, "0");
-        if (atoi(value) > 0) {
-            ALOGD("%s: quick calibration enabled", __func__);
-            cal_data.cal_type.cal_info.quick_calib_flag = 1;
-        } else {
-            ALOGD("%s: quick calibration disabled", __func__);
-            cal_data.cal_type.cal_info.quick_calib_flag = 0;
-        }
+        ALOGD("%s: quick calibration disabled", __func__);
+        cal_data.cal_type.cal_info.quick_calib_flag = 0;
     }
 
     cal_data.cal_type.cal_data.mem_handle = -1;
@@ -598,6 +629,7 @@ static int spkr_get_temp(struct audio_device *adev, int spkr_pos, int *temp)
         mixer_ctl_name = SPKR_RIGHT_WSA_TEMP;
 
     ctl = mixer_get_ctl_by_name(adev->mixer, mixer_ctl_name);
+
     if (!ctl) {
         ALOGE("%s: Could not get ctl for mixer cmd - %s",
               __func__, mixer_ctl_name);
@@ -1171,11 +1203,7 @@ static void* spkr_calibration_thread()
     property_get("persist.vendor.audio.spkr.cal.duration", value, "0");
     if (atoi(value) > 0)
         min_idle_time = atoi(value);
-    else {
-        property_get("persist.spkr.cal.duration", value, "0");
-        if (atoi(value) > 0)
-            min_idle_time = atoi(value);
-    }
+
     handle.speaker_prot_threadid = pthread_self();
     spv3_enable = property_get_bool("persist.vendor.audio.spv3.enable", false);
     property_get("persist.vendor.audio.avs.afe_api_version", afe_version_value,
@@ -1330,6 +1358,12 @@ static void* spkr_calibration_thread()
                        thermal_fd = -1;
 
                        ctl = mixer_get_ctl_by_name(adev->mixer, mixer_ctl_name);
+
+                       if (!ctl) {
+                           mixer_ctl_name = "SpkrMono WSA T0 Init";
+                           ctl = mixer_get_ctl_by_name(adev->mixer, mixer_ctl_name);
+                       }
+
                        if (ctl) {
                            ALOGD("%s: Got ctl for mixer cmd %s",
                                  __func__, mixer_ctl_name);
@@ -1844,7 +1878,7 @@ static int set_spkr_prot_v_vali_cfg(int wait_time, int vali_time)
     if (ioctl(cal_fd, AUDIO_SET_CALIBRATION, &cal_data))
         ALOGE("%s: failed to set TH VI V_VALI_CFG, errno = %d", __func__, errno);
 
-    if (cal_fd > 0)
+    if (cal_fd >= 0)
         close(cal_fd);
 done:
     return ret;
@@ -2187,10 +2221,8 @@ int fbsp_get_parameters(struct str_parms *query,
     int err = 0;
     char value[MAX_STR_SIZE] = {0};
 
-    if (!handle.spkr_prot_enable) {
-        ALOGD("%s: Speaker protection disabled", __func__);
+    if (!handle.spkr_prot_enable)
         return -EINVAL;
-    }
 
     err = str_parms_get_str(query, AUDIO_PARAMETER_KEY_FBSP_GET_SPKR_CAL, value,
                                                           sizeof(value));
@@ -2503,6 +2535,8 @@ exit:
         list_remove(&uc_info_tx->list);
         uc_info_tx->in_snd_device = in_snd_device;
         uc_info_tx->out_snd_device = SND_DEVICE_NONE;
+        audio_route_reset_and_update_path(adev->audio_route,
+           device_name);
         fp_disable_snd_device(adev, in_snd_device);
         fp_disable_audio_route(adev, uc_info_tx);
         free(uc_info_tx);

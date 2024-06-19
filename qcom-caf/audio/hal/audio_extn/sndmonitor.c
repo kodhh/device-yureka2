@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
+* Copyright (c) 2016-2021, The Linux Foundation. All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are
@@ -50,11 +50,13 @@
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/poll.h>
+#include <pthread.h>
 #include <cutils/list.h>
 #include <cutils/hashmap.h>
 #include <log/log.h>
 #include <cutils/str_parms.h>
 #include <ctype.h>
+#include <linux/version.h>
 
 #include "audio_hw.h"
 #include "audio_extn.h"
@@ -158,17 +160,20 @@ static int add_new_sndcard(int card, int fd)
     s->fd = fd; // dup?
 
     char *state = read_state(fd);
-
     if (!state) {
         free(s);
         return -1;
     }
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
     bool online = state && !strcmp(state, "ONLINE");
-
-    ALOGV("card %d initial state %s %d", card, state, online);
 
     if (state)
         free(state);
+#else
+    bool online = atoi(state);
+#endif
+
+    ALOGV("card %d initial state %s %d", card, state, online);
 
     s->status = online ? CARD_STATUS_ONLINE : CARD_STATUS_OFFLINE;
     list_add_tail(&sndmonitor.cards, &s->node);
@@ -226,6 +231,7 @@ static int enum_sndcards()
             (strncasecmp(card_id, "kona", 4) != 0) &&
             (strncasecmp(card_id, "holi", 4) != 0) &&
             (strncasecmp(card_id, "shima", 5) != 0) &&
+            (strncasecmp(card_id, "yupik", 5) != 0) &&
             (strncasecmp(card_id, "lahaina", 7) != 0) &&
             (strncasecmp(card_id, "atoll", 5) != 0) &&
             (strncasecmp(card_id, "bengal", 6) != 0) &&
@@ -233,8 +239,11 @@ static int enum_sndcards()
             ALOGW("Skip over non-ADSP snd card %s", card_id);
             continue;
         }
-
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
         snprintf(path, sizeof(path), "/proc/asound/card%s/state", ptr);
+#else
+        snprintf(path, sizeof(path), "/sys/kernel/snd_card/card_state");
+#endif
         ALOGV("Opening sound card state : %s", path);
 
         fd = open(path, O_RDONLY);
@@ -429,10 +438,13 @@ int on_dev_event(dev_event_t *dev_event)
     snprintf(val, sizeof(val), "%s,%s", dev_event->dev,
              dev_event->status ? "ON" : "OFF");
 
-    if (str_parms_add_str(params, AUDIO_PARAMETER_KEY_EXT_AUDIO_DEVICE, val) < 0)
-        return -1;
+    int ret = 0;
 
-    int ret = notify(params);
+    if (str_parms_add_str(params, AUDIO_PARAMETER_KEY_EXT_AUDIO_DEVICE, val) < 0) {
+        ret = -1;
+    } else {
+        ret = notify(params);
+    }
     str_parms_destroy(params);
     return ret;
 }
@@ -442,18 +454,26 @@ bool on_sndcard_state_update(sndcard_t *s)
     char rd_buf[9]={0};
     card_status_t status;
 
-    if (read(s->fd, rd_buf, 8) <= 0)
+    if (read(s->fd, rd_buf, 8) < 0) {
+        ALOGE("read card state error");
         return -1;
+    }
 
     rd_buf[8] = '\0';
     lseek(s->fd, 0, SEEK_SET);
 
     ALOGV("card num %d, new state %s", s->card, rd_buf);
-
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
     if (strstr(rd_buf, "OFFLINE"))
         status = CARD_STATUS_OFFLINE;
     else if (strstr(rd_buf, "ONLINE"))
         status = CARD_STATUS_ONLINE;
+#else
+    if (!atoi(rd_buf))
+        status = CARD_STATUS_OFFLINE;
+    else if (atoi(rd_buf))
+        status = CARD_STATUS_ONLINE;
+#endif
     else {
         ALOGE("unknown state");
         return 0;
@@ -483,10 +503,13 @@ bool on_sndcard_state_update(sndcard_t *s)
     key = (is_cpe ?  "CPE_STATUS" :
           (is_slpi ? "SLPI_STATUS" :
                      "SND_CARD_STATUS"));
-    if (str_parms_add_str(params, key, val) < 0)
-        return -1;
 
-    int ret = notify(params);
+    int ret = 0;
+    if (str_parms_add_str(params, key, val) < 0) {
+        ret = -1;
+    } else {
+        ret = notify(params);
+    }
     str_parms_destroy(params);
     return ret;
 }

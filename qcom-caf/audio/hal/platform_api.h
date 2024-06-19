@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2020, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013-2021, The Linux Foundation. All rights reserved.
  * Not a contribution.
  *
  * Copyright (C) 2013 The Android Open Source Project
@@ -9,12 +9,47 @@
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+
+ * Changes from Qualcomm Innovation Center are provided under the following license:
+
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted (subject to the limitations in the
+ * disclaimer below) provided that the following conditions are met:
+
+ *  * Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+
+ *   * Neither the name of Qualcomm Innovation Center, Inc. nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE
+ * GRANTED BY THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT
+ * HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
  */
 
 #ifndef AUDIO_PLATFORM_API_H
@@ -133,6 +168,7 @@ struct audio_custom_mtmx_in_params {
     struct audio_custom_mtmx_in_params_info in_info;
     uint32_t ip_channels;
     uint32_t mic_ch;
+    uint32_t i2s_ch;
     uint32_t ec_ref_ch;
     struct audio_custom_mtmx_params_in_ch_info in_ch_info[MAX_IN_CHANNELS];
 };
@@ -185,6 +221,7 @@ int platform_set_native_support(int na_mode);
 int platform_get_native_support();
 int platform_send_audio_calibration(void *platform, struct audio_usecase *usecase,
                                     int app_type);
+int platform_send_audio_calibration_hfp(void *platform, snd_device_t snd_device);
 int platform_get_default_app_type(void *platform);
 int platform_get_default_app_type_v2(void *platform, usecase_type_t  type);
 int platform_switch_voice_call_device_pre(void *platform);
@@ -256,10 +293,10 @@ const char * platform_get_snd_device_backend_interface(snd_device_t device);
 void platform_add_app_type(const char *uc_type,
                            const char *mode,
                            int bw, int app_type, int max_sr);
-int platform_set_snd_device_name(snd_device_t snd_device, const char * name);
 
 /* From platform_info.c */
 int platform_info_init(const char *filename, void *, caller_t);
+void platform_info_deinit();
 
 void platform_snd_card_update(void *platform, card_status_t scard_status);
 
@@ -274,7 +311,7 @@ bool platform_check_and_set_codec_backend_cfg(struct audio_device* adev,
 bool platform_check_and_set_capture_codec_backend_cfg(struct audio_device* adev,
                    struct audio_usecase *usecase, snd_device_t snd_device);
 int platform_get_usecase_index(const char * usecase);
-int platform_set_usecase_pcm_id(audio_usecase_t usecase, int32_t type, int32_t pcm_id);
+int platform_set_usecase_pcm_id(audio_usecase_t usecase, int32_t type, int32_t pcm_id, int32_t fe_id);
 void platform_set_echo_reference(struct audio_device *adev, bool enable,
                                  struct listnode *out_devices);
 int platform_check_and_set_swap_lr_channels(struct audio_device *adev, bool swap_channels);
@@ -287,7 +324,7 @@ int platform_get_supported_copp_sampling_rate(uint32_t stream_sr);
 int platform_set_channel_map(void *platform, int ch_count, char *ch_map,
                              int snd_id, int be_idx);
 int platform_set_stream_channel_map(void *platform, audio_channel_mask_t channel_mask,
-                                   int snd_id, uint8_t *input_channel_map);
+                                   int snd_id, int be_idx, uint8_t *input_channel_map);
 int platform_set_stream_pan_scale_params(void *platform,
                                          int snd_id,
                                          struct mix_matrix_params mm_params);
@@ -309,6 +346,7 @@ int platform_set_device_params(struct stream_out *out, int param, int value);
 int platform_set_audio_device_interface(const char * device_name, const char *intf_name,
                                         const char * codec_type);
 void platform_set_gsm_mode(void *platform, bool enable);
+void platform_set_tx_lpi_mode(void *platform, bool enable);
 bool platform_can_enable_spkr_prot_on_device(snd_device_t snd_device);
 int platform_get_spkr_prot_acdb_id(snd_device_t snd_device);
 int platform_get_spkr_prot_snd_device(snd_device_t snd_device);
@@ -335,8 +373,10 @@ bool platform_check_codec_dsd_support(void *platform);
 bool platform_check_codec_asrc_support(void *platform);
 int platform_get_backend_index(snd_device_t snd_device);
 int platform_get_ext_disp_type(void *platform);
+int platform_get_is_afe_loopback_enabled(void *platform);
 void platform_invalidate_hdmi_config(void *platform);
 void platform_invalidate_backend_config(void * platform,snd_device_t snd_device);
+bool platform_get_spkr_hph_single_be_native_concurrency_flag();
 
 #ifdef INSTANCE_ID_ENABLED
 void platform_make_cal_cfg(acdb_audio_cal_cfg_t* cal, int acdb_dev_id,
@@ -424,6 +464,8 @@ int platform_set_hdmi_channels_v2(void *platform, int channel_count,
 int platform_get_display_port_ctl_index(int controller, int stream);
 bool platform_is_call_proxy_snd_device(snd_device_t snd_device);
 void platform_set_audio_source_delay(audio_source_t audio_source, int delay_ms);
+bool platform_set_fluence_nn_state(void *platform, bool start);
+int platform_get_fluence_nn_state(void *platform);
 
 int platform_get_audio_source_index(const char *audio_source_name);
 bool platform_check_and_update_island_power_status(void *platform,
@@ -436,4 +478,10 @@ int platform_set_power_mode_on_device(struct audio_device* adev, snd_device_t sn
 int platform_set_island_cfg_on_device(struct audio_device* adev, snd_device_t snd_device,
                                       bool enable);
 void platform_reset_island_power_status(void *platform, snd_device_t snd_device);
+void platform_is_volume_boost_supported_device(void *platform, struct listnode *devices);
+const char *platform_get_mixer_FM_RX_control(struct audio_device *adev);
+#ifdef SOFT_VOLUME
+int platform_set_soft_step_volume_params(int uc_id, int period, int step, int curve);
+int platform_get_soft_step_volume_params(struct soft_step_volume_params *volume_params, int uc_id);
+#endif
 #endif // AUDIO_PLATFORM_API_H

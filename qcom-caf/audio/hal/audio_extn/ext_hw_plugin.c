@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2014-2019 The Linux Foundation. All rights reserved.
+* Copyright (c) 2014-2021 The Linux Foundation. All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are
@@ -25,6 +25,10 @@
 * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*
+* Changes from Qualcomm Innovation Center are provided under the following license:
+* Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+* SPDX-License-Identifier: BSD-3-Clause-Clear
 */
 
 #define LOG_TAG "audio_ext_hw_plugin"
@@ -62,7 +66,11 @@ struct ext_hw_plugin_data {
 };
 
 /* This can be defined in platform specific file or use compile flag */
+#ifdef DAEMON_SUPPORT_AUTO
+#define LIB_PLUGIN_DRIVER "libaudiohalpluginclient.so"
+#else
 #define LIB_PLUGIN_DRIVER "libaudiohalplugin.so"
+#endif
 
 void* ext_hw_plugin_init(struct audio_device *adev, ext_hw_plugin_init_config_t init_config)
 {
@@ -171,13 +179,16 @@ static int32_t ext_hw_plugin_check_plugin_usecase(audio_usecase_t hal_usecase,
     case USECASE_AUDIO_PLAYBACK_OFFLOAD9:
     case USECASE_AUDIO_PLAYBACK_ULL:
     case USECASE_AUDIO_PLAYBACK_MEDIA:
+    case USECASE_AUDIO_PLAYBACK_MEDIA_LL:
     case USECASE_AUDIO_PLAYBACK_SYS_NOTIFICATION:
         *plugin_usecase = AUDIO_HAL_PLUGIN_USECASE_DEFAULT_PLAYBACK;
         break;
     case USECASE_AUDIO_RECORD:
     case USECASE_AUDIO_RECORD_COMPRESS:
     case USECASE_AUDIO_RECORD_LOW_LATENCY:
+    case USECASE_AUDIO_RECORD_LOW_LATENCY2:
     case USECASE_AUDIO_RECORD_FM_VIRTUAL:
+    case USECASE_AUDIO_RECORD_ECHO_REF_EXT:
         *plugin_usecase = AUDIO_HAL_PLUGIN_USECASE_DEFAULT_CAPTURE;
         break;
     case USECASE_AUDIO_HFP_SCO:
@@ -191,13 +202,18 @@ static int32_t ext_hw_plugin_check_plugin_usecase(audio_usecase_t hal_usecase,
         *plugin_usecase = AUDIO_HAL_PLUGIN_USECASE_CS_VOICE_CALL;
         break;
     case USECASE_AUDIO_PLAYBACK_NAV_GUIDANCE:
+    case USECASE_AUDIO_PLAYBACK_NAV_GUIDANCE_LL:
         *plugin_usecase = AUDIO_HAL_PLUGIN_USECASE_DRIVER_SIDE_PLAYBACK;
         break;
     case USECASE_AUDIO_PLAYBACK_PHONE:
+    case USECASE_AUDIO_PLAYBACK_PHONE_LL:
         *plugin_usecase = AUDIO_HAL_PLUGIN_USECASE_PHONE_PLAYBACK;
         break;
     case USECASE_AUDIO_FM_TUNER_EXT:
        *plugin_usecase = AUDIO_HAL_PLUGIN_USECASE_FM_TUNER;
+        break;
+    case USECASE_ICC_CALL:
+        *plugin_usecase = AUDIO_HAL_PLUGIN_USECASE_ICC;
         break;
     default:
         ret = -EINVAL;
@@ -242,7 +258,7 @@ int32_t ext_hw_plugin_usecase_start(void *plugin, struct audio_usecase *usecase)
 
         if (((usecase->type == PCM_CAPTURE) || (usecase->type == VOICE_CALL) ||
               (usecase->type == VOIP_CALL) || (usecase->type == PCM_HFP_CALL) ||
-              (usecase->type == PCM_PASSTHROUGH)) &&
+              (usecase->type == ICC_CALL) || (usecase->type == PCM_PASSTHROUGH)) &&
             (usecase->in_snd_device != SND_DEVICE_NONE)) {
             codec_enable.snd_dev = usecase->in_snd_device;
             /* TODO - below should be related with in_snd_dev */
@@ -316,8 +332,8 @@ int32_t ext_hw_plugin_usecase_start(void *plugin, struct audio_usecase *usecase)
         }
 
         if (((usecase->type == PCM_PLAYBACK) || (usecase->type == VOICE_CALL) ||
-                (usecase->type == VOIP_CALL) || (usecase->type == PCM_HFP_CALL)) &&
-            (usecase->out_snd_device != SND_DEVICE_NONE)) {
+                (usecase->type == VOIP_CALL) || (usecase->type == PCM_HFP_CALL) ||
+                (usecase->type == ICC_CALL)) && (usecase->out_snd_device != SND_DEVICE_NONE)) {
             codec_enable.snd_dev = usecase->out_snd_device;
             /* TODO - below should be related with out_snd_dev */
             codec_enable.sample_rate = 48000;
@@ -384,8 +400,8 @@ int32_t ext_hw_plugin_usecase_stop(void *plugin, struct audio_usecase *usecase)
         }
 
         if (((usecase->type == PCM_PLAYBACK) || (usecase->type == VOICE_CALL) ||
-                (usecase->type == VOIP_CALL) || (usecase->type == PCM_HFP_CALL)) &&
-            (usecase->out_snd_device != SND_DEVICE_NONE)) {
+                (usecase->type == VOIP_CALL) || (usecase->type == PCM_HFP_CALL) ||
+                (usecase->type == ICC_CALL)) && (usecase->out_snd_device != SND_DEVICE_NONE)) {
             codec_disable.snd_dev = usecase->out_snd_device;
 
             ALOGD("%s: disable audio hal plugin output, %d, %d",
@@ -401,7 +417,7 @@ int32_t ext_hw_plugin_usecase_stop(void *plugin, struct audio_usecase *usecase)
         }
         if (((usecase->type == PCM_CAPTURE) || (usecase->type == VOICE_CALL) ||
              (usecase->type == VOIP_CALL) || (usecase->type == PCM_HFP_CALL) ||
-             (usecase->type == PCM_PASSTHROUGH)) &&
+             (usecase->type == PCM_PASSTHROUGH) || (usecase->type == ICC_CALL)) &&
             (usecase->in_snd_device != SND_DEVICE_NONE)) {
             codec_disable.snd_dev = usecase->in_snd_device;
 

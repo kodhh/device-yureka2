@@ -42,14 +42,14 @@ TARGET_SYSTEM_PROP := $(DEVICE_PATH)/system.prop
 TARGET_VENDOR_PROP := $(DEVICE_PATH)/vendor.prop
 
 # Kernel
-TARGET_KERNEL_CONFIG := YUREKA2_defconfig
+TARGET_KERNEL_CONFIG := vendor/YUREKA2_defconfig
 BOARD_KERNEL_BASE := 0x80000000
 BOARD_KERNEL_CMDLINE := androidboot.hardware=qcom msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 androidboot.bootdevice=7824900.sdhci earlycon=msm_hsl_uart,0x78af000 loop.max_part=16 androidboot.usbconfigfs=true
 BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb
 BOARD_KERNEL_PAGESIZE :=  2048
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01000000 --tags_offset 0x00000100
 TARGET_KERNEL_SOURCE := kernel/yu/YUREKA2
-TARGET_KERNEL_VERSION := 4.9
+TARGET_KERNEL_VERSION := 4.19
 
 # ANT
 BOARD_ANT_WIRELESS_DEVICE := "vfs-prerelease"
@@ -97,8 +97,10 @@ USE_DEVICE_SPECIFIC_DISPLAY := true
 DEVICE_SPECIFIC_DISPLAY_PATH := $(DEVICE_PATH)/qcom-caf/display
 TARGET_SCREEN_DENSITY := 420
 TARGET_USES_ION := true
-TARGET_USES_GRALLOC1 := true
+TARGET_USES_GRALLOC4 := true
 TARGET_USES_HWC2 := true
+TARGET_USES_QTI_MAPPER_2_0 := true
+TARGET_USES_QTI_MAPPER_EXTENSIONS_1_1 := true
 
 # Filesystem
 TARGET_USERIMAGES_USE_F2FS := true
@@ -119,7 +121,7 @@ BOARD_HAVE_QCOM_FM := true
 BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE := $(TARGET_BOARD_PLATFORM)
 
 # HIDL
-DEVICE_FRAMEWORK_MANIFEST_FILE := $(DEVICE_PATH)/framework_manifest.xml
+DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE := $(DEVICE_PATH)/framework_compatibility_matrix.xml
 DEVICE_MANIFEST_FILE := $(DEVICE_PATH)/manifest.xml
 DEVICE_MATRIX_FILE   := $(DEVICE_PATH)/compatibility_matrix.xml
 

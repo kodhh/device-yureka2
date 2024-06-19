@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2020, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013-2021, The Linux Foundation. All rights reserved.
  * Not a contribution.
  *
  * Copyright (C) 2013 The Android Open Source Project
@@ -33,6 +33,40 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+
+ *  Changes from Qualcomm Innovation Center are provided under the following license:
+
+ * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted (subject to the limitations in the
+ * disclaimer below) provided that the following conditions are met:
+
+ *  * Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+
+ *   * Neither the name of Qualcomm Innovation Center, Inc. nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE
+ * GRANTED BY THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT
+ * HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef QCOM_AUDIO_HW_H
@@ -47,13 +81,33 @@
 #include <tinycompress/tinycompress.h>
 
 #include <audio_route/audio_route.h>
+#ifndef LINUX_ENABLED
 #include <audio_utils/ErrorLog.h>
+#else
+typedef int error_log_t;
+#define error_log_dump(error_log, fd, prefix, lines, limit_ns)                 (0)
+#define error_log_create(entries, aggregate_ns)                                (0)
+#define error_log_destroy(error_log)                                           (0)
+#endif
+#ifndef LINUX_ENABLED
 #include <audio_utils/Statistics.h>
 #include <audio_utils/clock.h>
+#endif
 #include "audio_defs.h"
 #include "voice.h"
 #include "audio_hw_extn_api.h"
 #include "device_utils.h"
+
+#if LINUX_ENABLED
+typedef struct {
+   int64_t n;
+   double min;
+   double max;
+   double last;
+   double mean;
+} simple_stats_t;
+#define NANOS_PER_SECOND    1000000000LL
+#endif
 
 #if LINUX_ENABLED
 #if defined(__LP64__)
@@ -66,9 +120,15 @@
 #define ADM_LIBRARY_PATH "/usr/lib/libadm.so"
 #endif
 #else
+#if defined(__LP64__)
+#define VISUALIZER_LIBRARY_PATH "/vendor/lib64/soundfx/libqcomvisualizer.so"
+#define OFFLOAD_EFFECTS_BUNDLE_LIBRARY_PATH "/vendor/lib64/soundfx/libqcompostprocbundle.so"
+#define ADM_LIBRARY_PATH "/vendor/lib64/libadm.so"
+#else
 #define VISUALIZER_LIBRARY_PATH "/vendor/lib/soundfx/libqcomvisualizer.so"
 #define OFFLOAD_EFFECTS_BUNDLE_LIBRARY_PATH "/vendor/lib/soundfx/libqcompostprocbundle.so"
 #define ADM_LIBRARY_PATH "/vendor/lib/libadm.so"
+#endif
 #endif
 
 /* Flags used to initialize acdb_settings variable that goes to ACDB library */
@@ -139,6 +199,10 @@ typedef enum card_status_t {
     CARD_STATUS_ONLINE
 } card_status_t;
 
+typedef enum power_policy_status_t {
+    POWER_POLICY_STATUS_OFFLINE,
+    POWER_POLICY_STATUS_ONLINE
+} power_policy_status_t;
 /* These are the supported use cases by the hardware.
  * Each usecase is mapped to a specific PCM device.
  * Refer to pcm_device_table[].
@@ -176,6 +240,8 @@ enum {
 
     /* Capture usecases */
     USECASE_AUDIO_RECORD,
+    USECASE_AUDIO_RECORD2,
+    USECASE_AUDIO_RECORD3,
     USECASE_AUDIO_RECORD_COMPRESS,
     USECASE_AUDIO_RECORD_COMPRESS2,
     USECASE_AUDIO_RECORD_COMPRESS3,
@@ -183,6 +249,7 @@ enum {
     USECASE_AUDIO_RECORD_COMPRESS5,
     USECASE_AUDIO_RECORD_COMPRESS6,
     USECASE_AUDIO_RECORD_LOW_LATENCY,
+    USECASE_AUDIO_RECORD_LOW_LATENCY2,
     USECASE_AUDIO_RECORD_FM_VIRTUAL,
     USECASE_AUDIO_RECORD_HIFI,
 
@@ -239,14 +306,32 @@ enum {
 
     /* car streams usecases */
     USECASE_AUDIO_PLAYBACK_MEDIA,
+    USECASE_AUDIO_PLAYBACK_MEDIA_LL,
     USECASE_AUDIO_PLAYBACK_SYS_NOTIFICATION,
     USECASE_AUDIO_PLAYBACK_NAV_GUIDANCE,
+    USECASE_AUDIO_PLAYBACK_NAV_GUIDANCE_LL,
     USECASE_AUDIO_PLAYBACK_PHONE,
+    USECASE_AUDIO_PLAYBACK_PHONE_LL,
+    USECASE_AUDIO_PLAYBACK_ALERTS,
+    USECASE_AUDIO_PLAYBACK_ALERTS_LL,
     USECASE_AUDIO_PLAYBACK_FRONT_PASSENGER,
     USECASE_AUDIO_PLAYBACK_REAR_SEAT,
+    USECASE_AUDIO_RECORD_BUS,
+    USECASE_AUDIO_RECORD_BUS_FRONT_PASSENGER,
+    USECASE_AUDIO_RECORD_BUS_REAR_SEAT,
+
+    USECASE_AUDIO_PLAYBACK_SYNTHESIZER,
+
+    /* Echo reference capture usecases */
+    USECASE_AUDIO_RECORD_ECHO_REF_EXT,
 
     /*Audio FM Tuner usecase*/
     USECASE_AUDIO_FM_TUNER_EXT,
+    /*voip usecase with low latency path*/
+    USECASE_AUDIO_RECORD_VOIP_LOW_LATENCY,
+
+    /*In Car Communication Usecase*/
+    USECASE_ICC_CALL,
     AUDIO_USECASE_MAX
 };
 
@@ -325,12 +410,16 @@ typedef enum render_mode {
  */
 #define MAX_CAR_AUDIO_STREAMS    32
 enum {
-    CAR_AUDIO_STREAM_MEDIA            = 0x1,
-    CAR_AUDIO_STREAM_SYS_NOTIFICATION = 0x2,
-    CAR_AUDIO_STREAM_NAV_GUIDANCE     = 0x4,
-    CAR_AUDIO_STREAM_PHONE            = 0x8,
-    CAR_AUDIO_STREAM_FRONT_PASSENGER  = 0x100,
-    CAR_AUDIO_STREAM_REAR_SEAT        = 0x10000,
+    CAR_AUDIO_STREAM_MEDIA              = 0x1,
+    CAR_AUDIO_STREAM_SYS_NOTIFICATION   = 0x2,
+    CAR_AUDIO_STREAM_NAV_GUIDANCE       = 0x4,
+    CAR_AUDIO_STREAM_PHONE              = 0x8,
+    CAR_AUDIO_STREAM_IN_PRIMARY         = 0x10,
+    CAR_AUDIO_STREAM_ALERTS             = 0x20,
+    CAR_AUDIO_STREAM_FRONT_PASSENGER    = 0x100,
+    CAR_AUDIO_STREAM_IN_FRONT_PASSENGER = 0x200,
+    CAR_AUDIO_STREAM_REAR_SEAT          = 0x10000,
+    CAR_AUDIO_STREAM_IN_REAR_SEAT       = 0x20000,
 };
 
 struct stream_app_type_cfg {
@@ -347,6 +436,16 @@ struct stream_config {
     struct listnode device_list;
     unsigned int bit_width;
 };
+
+typedef struct streams_input_ctxt {
+    struct listnode list;
+    struct stream_in *input;
+} streams_input_ctxt_t;
+
+typedef struct streams_output_ctxt {
+    struct listnode list;
+    struct stream_out *output;
+} streams_output_ctxt_t;
 
 struct stream_inout {
     pthread_mutex_t lock; /* see note below on mutex acquisition order */
@@ -369,11 +468,12 @@ struct stream_out {
     pthread_mutex_t pre_lock; /* acquire before lock to avoid DOS by playback thread */
     pthread_cond_t  cond;
     /* stream_out->lock is of large granularity, and can only be held before device lock
-     * latch is a supplemetary lock to protect certain fields of out stream and
-     * it can be held after device lock
+     * latch is a supplemetary lock to protect certain fields of out stream (such as
+     * offload_state, a2dp_muted, to add any stream member that needs to be accessed
+     * with device lock held) and it can be held after device lock
      */
     pthread_mutex_t latch_lock;
-    pthread_mutex_t position_query_lock; /* sychronize frame written */
+    pthread_mutex_t position_query_lock;
     struct pcm_config config;
     struct compr_config compr_config;
     struct pcm *pcm;
@@ -396,11 +496,12 @@ struct stream_out {
     int64_t mmap_time_offset_nanos; /* fudge factor to correct inaccuracies in DSP */
     int     mmap_shared_memory_fd; /* file descriptor associated with MMAP NOIRQ shared memory */
     audio_io_handle_t handle;
+    streams_output_ctxt_t out_ctxt;
     struct stream_app_type_cfg app_type_cfg;
 
     int non_blocking;
     int playback_started;
-    int offload_state;
+    int offload_state; /* guarded by latch_lock */
     pthread_cond_t offload_cond;
     pthread_t offload_thread;
     struct listnode offload_cmd_list;
@@ -442,7 +543,7 @@ struct stream_out {
     qahwi_stream_out_t qahwi_out;
 
     bool is_iec61937_info_available;
-    bool a2dp_muted;
+    bool a2dp_muted; /* guarded by latch_lock */
     float volume_l;
     float volume_r;
     bool apply_volume;
@@ -455,11 +556,12 @@ struct stream_out {
     mix_matrix_params_t downmix_params;
     bool set_dual_mono;
     bool prev_card_status_offline;
-
+#ifndef LINUX_ENABLED
     error_log_t *error_log;
+#endif
     bool pspd_coeff_sent;
 
-    int car_audio_stream;
+    int car_audio_stream; /* handle for car_audio_stream */
 
     union {
         char *addr;
@@ -502,6 +604,7 @@ struct stream_in {
     int64_t mmap_time_offset_nanos; /* fudge factor to correct inaccuracies in DSP */
     int     mmap_shared_memory_fd; /* file descriptor associated with MMAP NOIRQ shared memory */
     audio_io_handle_t capture_handle;
+    streams_input_ctxt_t in_ctxt;
     audio_input_flags_t flags;
     char profile[MAX_STREAM_PROFILE_STR_LEN];
     bool is_st_session;
@@ -530,9 +633,12 @@ struct stream_in {
     int64_t frames_read; /* total frames read, not cleared when entering standby */
     int64_t frames_muted; /* total frames muted, not cleared when entering standby */
 
+#ifndef LINUX_ENABLED
     error_log_t *error_log;
-
+#endif
     simple_stats_t start_latency_ms;
+
+    int car_audio_stream; /* handle for car_audio_stream*/
 };
 
 typedef enum {
@@ -544,6 +650,8 @@ typedef enum {
     TRANSCODE_LOOPBACK_RX,
     TRANSCODE_LOOPBACK_TX,
     PCM_PASSTHROUGH,
+    ICC_CALL,
+    SYNTH_LOOPBACK,
     USECASE_TYPE_MAX
 } usecase_type_t;
 
@@ -606,16 +714,6 @@ struct streams_io_cfg {
     struct stream_app_type_cfg app_type_cfg;
 };
 
-typedef struct streams_input_ctxt {
-    struct listnode list;
-    struct stream_in *input;
-} streams_input_ctxt_t;
-
-typedef struct streams_output_ctxt {
-    struct listnode list;
-    struct stream_out *output;
-} streams_output_ctxt_t;
-
 typedef void* (*adm_init_t)();
 typedef void (*adm_deinit_t)(void *);
 typedef void (*adm_register_output_stream_t)(void *, audio_io_handle_t, audio_output_flags_t);
@@ -670,6 +768,8 @@ struct audio_device {
 
     int snd_card;
     card_status_t card_status;
+    power_policy_status_t out_power_policy;
+    power_policy_status_t in_power_policy;
     unsigned int cur_codec_backend_samplerate;
     unsigned int cur_codec_backend_bit_width;
     bool is_channel_status_set;
@@ -677,6 +777,7 @@ struct audio_device {
     void *extspk;
     unsigned int offload_usecases_state;
     unsigned int pcm_record_uc_state;
+    unsigned int pcm_low_latency_record_uc_state;
     void *visualizer_lib;
     int (*visualizer_start_output)(audio_io_handle_t, int);
     int (*visualizer_stop_output)(audio_io_handle_t, int);
@@ -725,6 +826,7 @@ struct audio_device {
     int    haptic_pcm_device_id;
     uint8_t *haptic_buffer;
     size_t haptic_buffer_size;
+    int fluence_nn_usecase_id;
 
     /* logging */
     snd_device_t last_logged_snd_device[AUDIO_USECASE_MAX][2]; /* [out, in] */
@@ -754,6 +856,17 @@ struct audio_patch_record {
     audio_usecase_t usecase;
     struct audio_patch patch;
 };
+
+#ifdef SOFT_VOLUME
+/* this struct is used for set/get values from AHAL*/
+struct soft_step_volume_params {
+    int period;
+    int step;
+    int curve;
+};
+#endif
+void out_set_power_policy(uint8_t enable);
+void in_set_power_policy(uint8_t enable);
 
 int select_devices(struct audio_device *adev,
                           audio_usecase_t uc_id);
@@ -787,6 +900,7 @@ int pcm_ioctl(struct pcm *pcm, int request, ...);
 audio_usecase_t get_usecase_id_from_usecase_type(const struct audio_device *adev,
                                                  usecase_type_t type);
 
+/* adev lock held */
 int check_a2dp_restore_l(struct audio_device *adev, struct stream_out *out, bool restore);
 
 int adev_open_output_stream(struct audio_hw_device *dev,
@@ -801,11 +915,6 @@ void adev_close_output_stream(struct audio_hw_device *dev __unused,
 
 bool is_interactive_usecase(audio_usecase_t uc_id);
 
-streams_input_ctxt_t *in_get_stream(struct audio_device *dev,
-                                  audio_io_handle_t input);
-streams_output_ctxt_t *out_get_stream(struct audio_device *dev,
-                                  audio_io_handle_t output);
-
 size_t get_output_period_size(uint32_t sample_rate,
                             audio_format_t format,
                             int channel_count,
@@ -815,6 +924,7 @@ size_t get_output_period_size(uint32_t sample_rate,
 #define CHECK(condition) LOG_ALWAYS_FATAL_IF(!(condition), "%s",\
             __FILE__ ":" LITERAL_TO_STRING(__LINE__)\
             " ASSERT_FATAL(" #condition ") failed.")
+bool is_combo_audio_input_device(struct listnode *devices);
 
 static inline bool is_loopback_input_device(audio_devices_t device) {
     if (!audio_is_output_device(device) &&
@@ -849,7 +959,33 @@ audio_patch_handle_t generate_patch_handle();
 
 /*
  * NOTE: when multiple mutexes have to be acquired, always take the
- * stream_in or stream_out mutex first, followed by the audio_device mutex.
+ * stream_in or stream_out mutex first, followed by the audio_device mutex
+ * and latch at last.
  */
+
+static inline audio_format_t pcm_format_to_audio_format(const enum pcm_format format)
+{
+   audio_format_t ret = AUDIO_FORMAT_INVALID;
+   switch(format) {
+        case PCM_FORMAT_S16_LE:
+            ret = (audio_format_t)AUDIO_FORMAT_PCM_SUB_16_BIT;
+            break;
+        case PCM_FORMAT_S32_LE:
+           ret = (audio_format_t)AUDIO_FORMAT_PCM_SUB_32_BIT;
+           break;
+        case PCM_FORMAT_S8:
+           ret = (audio_format_t)AUDIO_FORMAT_PCM_SUB_8_BIT;
+           break;
+        case PCM_FORMAT_S24_LE:
+           ret = (audio_format_t)AUDIO_FORMAT_PCM_SUB_8_24_BIT;
+           break;
+        case PCM_FORMAT_S24_3LE:
+           ret = (audio_format_t)AUDIO_FORMAT_PCM_SUB_24_BIT_PACKED;
+           break;
+        default:
+           break;
+      }
+      return ret;
+}
 
 #endif // QCOM_AUDIO_HW_H

@@ -8,7 +8,15 @@ LOCAL_ARM_MODE := arm
 
 AUDIO_PLATFORM := $(TARGET_BOARD_PLATFORM)
 
-ifneq ($(filter msm8974 msm8226 msm8084 msm8610 apq8084 msm8994 msm8992 msm8996 msm8998 apq8098_latv sdm845 sdm710 qcs605 sdmshrike msmnile kona lahaina holi sdm660 msm8937 msm8953 $(MSMSTEPPE) $(TRINKET) lito atoll bengal,$(TARGET_BOARD_PLATFORM)),)
+ifneq ($(TARGET_BOARD_AUTO),true)
+LIBRARY_TINYCOMPRESS := libtinycompress
+LIBRARY_TINYCOMPRESS_INC := external/tinycompress/include
+else
+LIBRARY_TINYCOMPRESS := libqti-tinycompress
+LIBRARY_TINYCOMPRESS_INC := $(TOP)/vendor/qcom/opensource/tinycompress/include
+endif
+
+ifneq ($(filter msm8974 msm8226 msm8084 msm8610 apq8084 msm8994 msm8992 msm8996 msm8998 apq8098_latv sdm845 sdm710 qcs605 sdmshrike msmnile gen4 kona lahaina holi sdm660 msm8937 msm8953 $(MSMSTEPPE) $(TRINKET) lito atoll bengal,$(TARGET_BOARD_PLATFORM)),)
   # B-family platform uses msm8974 code base
   AUDIO_PLATFORM = msm8974
   MULTIPLE_HW_VARIANTS_ENABLED := true
@@ -64,14 +72,19 @@ endif
 ifneq ($(filter qcs605,$(TARGET_BOARD_PLATFORM)),)
   LOCAL_CFLAGS := -DPLATFORM_QCS605
 endif
-ifneq ($(filter msmnile sdmshrike,$(TARGET_BOARD_PLATFORM)),)
+ifneq ($(filter msmnile gen4 sdmshrike,$(TARGET_BOARD_PLATFORM)),)
   LOCAL_CFLAGS := -DPLATFORM_MSMNILE
   LOCAL_CFLAGS += -DMAX_TARGET_SPECIFIC_CHANNEL_CNT="4"
   LOCAL_CFLAGS += -DINCALL_MUSIC_ENABLED
   LOCAL_CFLAGS += -DINCALL_STEREO_CAPTURE_ENABLED
 endif
-ifneq ($(filter kona lahaina,$(TARGET_BOARD_PLATFORM)),)
+ifneq ($(filter kona,$(TARGET_BOARD_PLATFORM)),)
   LOCAL_CFLAGS := -DPLATFORM_KONA
+  LOCAL_CFLAGS += -DMAX_TARGET_SPECIFIC_CHANNEL_CNT="4"
+  LOCAL_CFLAGS += -DINCALL_STEREO_CAPTURE_ENABLED
+endif
+ifneq ($(filter lahaina,$(TARGET_BOARD_PLATFORM)),)
+  LOCAL_CFLAGS := -DPLATFORM_LAHAINA
   LOCAL_CFLAGS += -DMAX_TARGET_SPECIFIC_CHANNEL_CNT="4"
   LOCAL_CFLAGS += -DINCALL_STEREO_CAPTURE_ENABLED
 endif
@@ -121,9 +134,36 @@ ifeq ($(TARGET_BOARD_AUTO),true)
   LOCAL_CFLAGS += -DPLATFORM_AUTO
 endif
 
+ifeq ($(ENABLE_AUDIO_LEGACY_TECHPACK),true)
+ifeq ($(TARGET_BOARD_AUTO),true)
+  LIBRARY_TINYCOMPRESS := libqti-tinycompress
+  LIBRARY_TINYCOMPRESS_INC := $(TOP)/vendor/qcom/opensource/tinycompress/include
+else
+  LIBRARY_TINYCOMPRESS := libtinycompress
+  LIBRARY_TINYCOMPRESS_INC := external/tinycompress/include
+endif
+  LOCAL_CFLAGS += -DENABLE_AUDIO_LEGACY_PURE
+endif
+
+ifeq ($(TARGET_SUPPORTS_WEARABLES),true)
+   LOCAL_CFLAGS += -DENABLE_HFP_CALIBRATION
+endif
+
+ifeq ($(strip $(AUDIO_FEATURE_ENABLED_DAEMON_SUPPORT)), true)
+  LOCAL_CFLAGS += -DDAEMON_SUPPORT_AUTO
+endif
+
 LOCAL_CFLAGS += -Wno-macro-redefined
 
 LOCAL_HEADER_LIBRARIES := libhardware_headers
+
+ifeq ($(ENABLE_AUDIO_LEGACY_TECHPACK),true)
+  LOCAL_HEADER_LIBRARIES += qti_legacy_audio_kernel_uapi
+endif
+
+ifeq ($(AUDIO_FEATURE_ENABLED_HAL_V7), true)
+  LOCAL_CFLAGS += -DANDROID_U_HAL7
+endif
 
 LOCAL_SRC_FILES := \
     audio_hw.c \
@@ -149,7 +189,7 @@ LOCAL_SHARED_LIBRARIES := \
     liblog \
     libcutils \
     libtinyalsa \
-    libtinycompress \
+    $(LIBRARY_TINYCOMPRESS) \
     libaudioroute \
     libdl \
     libaudioutils \
@@ -160,15 +200,19 @@ LOCAL_SHARED_LIBRARIES := \
 
 LOCAL_C_INCLUDES += \
     external/tinyalsa/include \
-    external/tinycompress/include \
+    $(LIBRARY_TINYCOMPRESS_INC) \
     system/media/audio_utils/include \
     external/expat/lib \
-    vendor/qcom/opensource/core-utils/fwk-detect \
     $(call include-path-for, audio-route) \
     $(call include-path-for, audio-effects) \
     $(LOCAL_PATH)/$(AUDIO_PLATFORM) \
     $(LOCAL_PATH)/audio_extn \
     $(LOCAL_PATH)/voice_extn
+ifneq ($(BOARD_OPENSOURCE_DIR), )
+  LOCAL_C_INCLUDES += $(BOARD_OPENSOURCE_DIR)/core-utils/fwk-detect
+else
+  LOCAL_C_INCLUDES += vendor/qcom/opensource/core-utils/fwk-detect
+endif # BOARD_OPENSOURCE_DIR
 
 LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
 LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include/audio
@@ -179,7 +223,11 @@ LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
 # Hardware specific feature
 ifeq ($(strip $(AUDIO_FEATURE_ENABLED_DLKM)),true)
   LOCAL_HEADER_LIBRARIES += audio_kernel_headers
-  LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/vendor/qcom/opensource/audio-kernel/include
+ifneq ($(BOARD_OPENSOURCE_DIR), )
+    LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/$(BOARD_OPENSOURCE_DIR)/audio-kernel/include
+  else
+    LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/vendor/qcom/opensource/audio-kernel/include
+  endif # BOARD_OPENSOURCE_DIR
 endif
 
 ifeq ($(strip $(AUDIO_FEATURE_ENABLED_EXTENDED_COMPRESS_FORMAT)),true)
@@ -230,6 +278,16 @@ ifeq ($(strip $(AUDIO_FEATURE_ENABLED_QAF)),true)
     LOCAL_CFLAGS += -DQAF_EXTN_ENABLED
     LOCAL_C_INCLUDES += $(TARGET_OUT_HEADERS)/mm-audio/qaf/
     LOCAL_SRC_FILES += audio_extn/qaf.c
+endif
+
+# Concurrent capture
+ifeq ($(strip $(AUDIO_FEATURE_ENABLED_CONCURRENT_CAPTURE)),true)
+    LOCAL_CFLAGS += -DCONCURRENT_CAPTURE_ENABLED
+endif
+
+# soft step volume params control
+ifeq ($(strip $(AUDIO_FEATURE_ENABLED_SOFT_VOLUME)),true)
+    LOCAL_CFLAGS += -DSOFT_VOLUME
 endif
 
 # Hardware specific feature

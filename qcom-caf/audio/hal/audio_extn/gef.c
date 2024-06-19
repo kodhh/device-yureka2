@@ -39,15 +39,14 @@
 #include "audio_hw.h"
 #include "platform.h"
 #include "platform_api.h"
-#include <pthread.h>
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <dlfcn.h>
 #include <math.h>
+#include <pthread.h>
 #include <cutils/properties.h>
 #include "audio_extn.h"
 #include "audio_hw.h"
-#include <pthread.h>
 
 #ifdef DYNAMIC_LOG_ENABLED
 #include <log_xml_parser.h>
@@ -60,7 +59,11 @@
 #if LINUX_ENABLED
 #define GEF_LIBRARY "libqtigef.so"
 #else
+#ifdef __LP64__
+#define GEF_LIBRARY "/vendor/lib64/libqtigef.so"
+#else
 #define GEF_LIBRARY "/vendor/lib/libqtigef.so"
+#endif
 #endif
 
 typedef void* (*gef_init_t)(void*);
