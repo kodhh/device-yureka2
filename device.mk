@@ -323,7 +323,7 @@ PRODUCT_PACKAGES += \
 
 # Lights
 PRODUCT_PACKAGES += \
-    android.hardware.light@2.0-service.xiaomi_mido
+    android.hardware.light-service.xiaomi_mido
 
 # LMKD
 # Enable stats logging in LMKD
@@ -425,9 +425,7 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/thermal-engine.conf:$(TARGET_COPY_OUT_VENDOR)/etc/thermal-engine.conf
 
 PRODUCT_PACKAGES += \
-    android.hardware.thermal@1.0-impl:64 \
-    android.hardware.thermal@1.0-service \
-    thermal.msm8953:64
+    android.hardware.thermal@2.0-service.qti.xiaomi_mido
 
 # Touch features
 PRODUCT_PACKAGES += \

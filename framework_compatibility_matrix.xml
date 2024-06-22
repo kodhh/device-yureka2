@@ -26,6 +26,60 @@ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <compatibility-matrix version="2.0" type="framework">
+    <hal format="hidl" optional="true">
+        <name>android.hardware.bluetooth.audio</name>
+        <version>2.1</version>
+        <interface>
+             <name>IBluetoothAudioProvidersFactory</name>
+             <instance>default</instance>
+        </interface>
+    </hal>
+   <hal format="hidl" optional="true">
+       <name>android.hardware.drm</name>
+       <version>1.0-4</version>
+       <interface>
+          <name>ICryptoFactory</name>
+          <instance>clearkey</instance>
+          <instance>widevine</instance>
+       </interface>
+       <interface>
+           <name>IDrmFactory</name>
+           <instance>clearkey</instance>
+           <instance>widevine</instance>
+       </interface>
+   </hal>
+    <hal format="hidl" optional="true">
+        <name>android.hardware.wifi.hostapd</name>
+        <version>1.0-3</version>
+        <interface>
+             <name>IHostapd</name>
+             <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>android.hardware.wifi.supplicant</name>
+        <version>1.0-4</version>
+        <interface>
+             <name>ISupplicant</name>
+             <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>android.hardware.wifi</name>
+        <version>1.0-5</version>
+        <interface>
+             <name>IWifi</name>
+             <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.nxp.nxpnfc</name>
+        <version>1.0</version>
+        <interface>
+             <name>INxpNfc</name>
+             <instance>default</instance>
+        </interface>
+    </hal>
    <hal format="hidl" optional="true">
        <name>vendor.lineage.touch</name>
        <transport>hwbinder</transport>
