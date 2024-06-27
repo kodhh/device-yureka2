@@ -5,7 +5,11 @@ audio_hal.in_period_size        u:object_r:vendor_audio_prop:s0
 audio.dirac.                    u:object_r:vendor_dirac_prop:s0
 persist.audio.dirac             u:object_r:vendor_dirac_prop:s0
 
+# Bluetooth
+persist.vendor.bt.address       u:object_r:vendor_bluetooth_prop:s0
+
 # Camera
+camera.              u:object_r:camera_prop:s0
 camera.clientname               u:object_r:camera_prop:s0
 camera.cpp.dumpreprocesspayload u:object_r:camera_prop:s0
 camera.cpp.dumppreviewpayload   u:object_r:camera_prop:s0
@@ -28,6 +32,7 @@ persist.vendor.camera.dbglog    u:object_r:camera_prop:s0
 persist.vendor.camera.mi.module.info    u:object_r:camera_prop:s0
 ro.camera.req.fmq.size          u:object_r:camera_prop:s0
 ro.camera.res.fmq.size          u:object_r:camera_prop:s0
+ro.camera.         u:object_r:camera_prop:s0
 
 # Fingerprint
 fpc.fp.miui.token               u:object_r:vendor_fp_prop:s0
@@ -52,5 +57,6 @@ persist.vendor.slm.             u:object_r:vendor_slm_prop:s0
 persist.sys.dynamic.nv          u:object_r:vendor_wifi_prop:s0
 vendor.wlan.driver.ath          u:object_r:vendor_wifi_prop:s0
 vendor.wlan.driver.config       u:object_r:vendor_wifi_prop:s0
+persist.vendor.wlan             u:object_r:vendor_wifi_prop:s0
 vendor.wlan.                    u:object_r:vendor_wifi_prop:s0
 wifi.active.interface           u:object_r:vendor_wifi_prop:s0

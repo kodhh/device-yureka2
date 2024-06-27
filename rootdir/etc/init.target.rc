@@ -64,14 +64,6 @@ on init
     write /dev/stune/top-app/schedtune.colocate 1
     write /sys/module/qpnp_rtc/parameters/poweron_alarm 1
 
-    # Add a cpuset for the camera daemon
-    mkdir /dev/cpuset/camera-daemon 0750 cameraserver cameraserver
-    write /dev/cpuset/camera-daemon/cpus 0-7
-    write /dev/cpuset/camera-daemon/mems 0
-    chown cameraserver cameraserver /dev/cpuset/camera-daemon/tasks
-    chmod 0660 /dev/cpuset/camera-daemon/tasks
-    chown system system /sys/kernel/hbtp/display_pwr
-
 on post-fs
     # set RLIMIT_MEMLOCK to 64MB
     setrlimit 8 67108864 67108864
@@ -120,19 +112,23 @@ service vendor.qseecomd /vendor/bin/qseecomd
    task_profiles ServiceCapacityLow
 
 service thermal-engine /vendor/bin/thermal-engine
-   class main
-   user root
-   socket thermal-send-client stream 0666 system system
-   socket thermal-recv-client stream 0660 system system
-   socket thermal-recv-passive-client stream 0666 system system
-   socket thermal-send-rule stream 0660 system system
-   group root
+    class main
+    user root
+    group root
+    socket thermal-send-client stream 0660 system oem_2907
+    socket thermal-recv-client stream 0660 system oem_2907
+    socket thermal-recv-passive-client stream 0660 system oem_2907
+    socket thermal-send-rule stream 0660 system oem_2907
 
-service wcnss-service /vendor/bin/wcnss_service
+on property:sys.boot_completed=1
+    restart thermal-engine
+
+service vendor.wcnss-service /vendor/bin/wcnss_service
     class main
     user system
     group system wifi radio
     oneshot
+    task_profiles ServiceCapacityLow
 
 on property:init.svc.surfaceflinger=stopped
     stop ppd
@@ -151,6 +147,9 @@ on property:init.svc.zygote=running
 
 on property:init.svc.zygote=restarting
     stop ppd
+
+on property:init.svc.vendor.qcrild=running
+    restart vendor.radio-config-1-1-wrapper
 
 service vendor.hvdcp_opti /vendor/bin/hvdcp_opti
     class main
@@ -197,32 +196,3 @@ service vendor.sensors.qti /vendor/bin/sensors.qti
     user system
     group system
     disabled
-
-# UClamp tunings
-on boot
-    write /proc/sys/kernel/sched_util_clamp_min_rt_default 96
-    write /proc/sys/kernel/sched_util_clamp_min 128
-
-    # top-app
-    write /dev/cpuset/top-app/uclamp.max max
-    write /dev/cpuset/top-app/uclamp.min 20
-    write /dev/cpuset/top-app/uclamp.boosted 1
-    write /dev/cpuset/top-app/uclamp.latency_sensitive 1
-
-    # foreground
-    write /dev/cpuset/foreground/uclamp.max 50
-    write /dev/cpuset/foreground/uclamp.min 20
-    write /dev/cpuset/foreground/uclamp.boosted 0
-    write /dev/cpuset/foreground/uclamp.latency_sensitive 0
-
-    # background
-    write /dev/cpuset/background/uclamp.max max
-    write /dev/cpuset/background/uclamp.min 20
-    write /dev/cpuset/background/uclamp.boosted 0
-    write /dev/cpuset/background/uclamp.latency_sensitive 0
-
-    # system-background
-    write /dev/cpuset/system-background/uclamp.max 50
-    write /dev/cpuset/system-background/uclamp.min 10
-    write /dev/cpuset/system-background/uclamp.boosted 0
-    write /dev/cpuset/system-background/uclamp.latency_sensitive 0

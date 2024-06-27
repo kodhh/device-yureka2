@@ -242,8 +242,8 @@ on property:vendor.radio.atfwd.start=false
 
 # DSDS - Restart qcrild on data switch
 on property:persist.sys.radio.mobile_data_swap=1
+    exec /bin/sleep 3s
     restart vendor.qcrild
-    exec /bin/sleep 2
     restart vendor.qcrild2
 
 service qcom-c_main-sh /vendor/bin/init.class_main.sh
@@ -251,23 +251,6 @@ service qcom-c_main-sh /vendor/bin/init.class_main.sh
     user root
     group root system
     oneshot
-
-on property:vold.decrypt=trigger_shutdown_framework
-    stop vendor.gnss_service
-    stop vendor.camera-provider-2-4
-    stop vendor.fps_hal
-    stop wcnss-service
-    stop vendor.qcrild
-    stop vendor.qcrild2
-
-on property:vold.decrypt=trigger_restart_framework
-    stop vendor.camera-provider-2-4
-    restart vendor.fps_hal
-    start wcnss-service
-    restart vendor.qcrild
-    exec /bin/sleep 2
-    restart vendor.qcrild2
-    restart vendor.gnss_service
 
 service vendor.qrtr-ns /vendor/bin/qrtr-ns -f
     class core
@@ -291,6 +274,9 @@ service loc_launcher /vendor/bin/loc_launcher
     user gps
     group gps
     task_profiles ServiceCapacityLow
+
+on property:persist.sys.xtra-daemon.enabled=*
+    restart loc_launcher
 
 service qcom-sh /vendor/bin/init.qcom.sh
     class late_start
@@ -323,6 +309,7 @@ service vendor.msm_irqbalance /vendor/bin/msm_irqbalance -f /vendor/etc/msm_irqb
     class core
     user root
     group root
+    task_profiles ServiceCapacityLow
 
 on charger
     start vendor.qcom-post-boot
@@ -334,6 +321,8 @@ service vendor.audio-hal /vendor/bin/hw/android.hardware.audio.service
     # media gid needed for /dev/fm (radio) and for /data/misc/media (tee)
     group audio camera drmrpc inet media mediadrm net_bt net_bt_admin net_bw_acct oem_2901 wakelock system
     capabilities BLOCK_SUSPEND SYS_NICE
+    # setting RLIMIT_RTPRIO allows binder RT priority inheritance
+    rlimit rtprio 10 10
     ioprio rt 4
     task_profiles ProcessCapacityHigh HighPerformance
     onrestart restart audioserver
