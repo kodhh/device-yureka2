@@ -176,7 +176,7 @@ PRODUCT_PACKAGES += \
     libcamshim \
     libgui_vendor \
     vendor.qti.hardware.camera.device@1.0 \
-    vendor.qti.hardware.camera.device@1.0.vendor
+    vendor.qti.hardware.camera.device@1.0.vendor \
     GoogleCameraGo
 
 # Libshims
