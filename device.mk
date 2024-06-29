@@ -94,21 +94,11 @@ PRODUCT_PACKAGES += \
     android.hardware.audio.service \
     android.hardware.soundtrigger@2.1-impl:32 \
     audio.bluetooth.default \
-    audio.primary.msm8953:32 \
     audio.r_submix.default \
     audio.usb.default \
     libaacwrapper \
     libaudio-resampler:32 \
-    libqcomvisualizer:32 \
-    libqcomvoiceprocessing:32 \
-    libqcompostprocbundle:32 \
     sound_trigger.primary.msm8953:32
-
-# Audio features
-PRODUCT_PACKAGES += \
-    libhfp:32 \
-    libsndmonitor:32 \
-    libspkrprot:32
 
 # Audio configuration
 PRODUCT_COPY_FILES += \
@@ -153,9 +143,7 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     android.hardware.nfc@1.2-service \
     NfcNci \
-    com.gsma.services.nfc \
     SecureElement \
-    com.nxp.nfc.nq \
     Tag
 
 # Camera
@@ -202,13 +190,10 @@ PRODUCT_PACKAGES += \
     android.hardware.graphics.mapper@2.0-impl-2.1 \
     android.hardware.memtrack@1.0-impl \
     android.hardware.memtrack@1.0-service \
-    gralloc.msm8953 \
-    hwcomposer.msm8953 \
     libgralloc.system.qti \
     libqdMetaData.system \
     libtinyxml \
     libvulkan \
-    memtrack.msm8953 \
     vendor.display.config@1.0.vendor \
     vendor.qti.hardware.display.mapper@2.0.vendor
 
@@ -353,13 +338,7 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libc2dcolorconvert \
     libmm-omxcore \
-    libOmxAacEnc \
-    libOmxAmrEnc \
     libOmxCore \
-    libOmxEvrcEnc \
-    libOmxG711Enc \
-    libOmxQcelp13Enc \
-    libOmxSwVencHevc \
     libOmxVdec \
     libOmxVenc \
     libstagefrighthw \
@@ -413,7 +392,6 @@ PRODUCT_PACKAGES += \
     android.hardware.radio.config@1.2.vendor \
     android.hardware.radio.deprecated@1.0.vendor \
     android.hardware.secure_element@1.2.vendor \
-    libcnefeatureconfig \
     librmnetctl \
     qti-telephony-hidl-wrapper \
     qti_telephony_hidl_wrapper.xml \
