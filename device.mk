@@ -17,6 +17,9 @@
 $(call inherit-product, vendor/yu/YUREKA2/YUREKA2-vendor.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/product_launched_with_m.mk)
 
+# Add common definitions for Qualcomm
+$(call inherit-product, hardware/qcom-caf/common/common.mk)
+
 PRODUCT_OTA_ENFORCE_VINTF_KERNEL_REQUIREMENTS := true
 
 # Overlays
@@ -170,6 +173,7 @@ PRODUCT_PACKAGES += \
     camera.msm8953 \
     libcamshim \
     libgui_vendor \
+    libion.vendor \
     vendor.qti.hardware.camera.device@1.0 \
     vendor.qti.hardware.camera.device@1.0.vendor \
     GoogleCameraGo
@@ -187,7 +191,6 @@ PRODUCT_COPY_FILES += \
 # ConfigStore
 PRODUCT_PACKAGES += \
     disable_configstore
-
 
 # Display
 PRODUCT_PACKAGES += \
@@ -280,8 +283,15 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/org.lineageos.health.excluded.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/org.lineageos.health.excluded.xml
 
 # HIDL
+PRODUCT_ENFORCE_VINTF_MANIFEST_OVERRIDE := true
+
 PRODUCT_PACKAGES += \
+    android.hidl.allocator@1.0.vendor \
     android.hidl.base@1.0 \
+    android.hidl.base@1.0.vendor\
+    android.hidl.manager@1.0 \
+    android.hidl.memory@1.0.vendor \
+    libhidlmemory.vendor \
     libhidltransport \
     libhidltransport.vendor \
     libhwbinder \
@@ -413,7 +423,9 @@ PRODUCT_PACKAGES += \
     android.hardware.radio.config@1.2.vendor \
     android.hardware.radio.deprecated@1.0.vendor \
     android.hardware.secure_element@1.2.vendor \
+    libnetutils.vendor \
     librmnetctl \
+    libsqlite.vendor \
     qti-telephony-hidl-wrapper \
     qti_telephony_hidl_wrapper.xml \
     qti-telephony-utils \
@@ -434,7 +446,8 @@ PRODUCT_PACKAGES += \
     android.frameworks.sensorservice@1.0.vendor \
     android.hardware.sensors@1.0-impl:64 \
     android.hardware.sensors@1.0-service \
-    libsensorndkbridge:64
+    libsensorndkbridge:64 \
+    libpower.vendor
 
 # Thermal
 PRODUCT_COPY_FILES += \
