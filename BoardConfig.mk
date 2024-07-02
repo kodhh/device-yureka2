@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2017-2018 The LineageOS Project
+# Copyright (C) 2017-2024 The LineageOS Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,8 +33,10 @@ TARGET_2ND_CPU_VARIANT_RUNTIME := cortex-a53
 
 # Build
 BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
-BUILD_BROKEN_INCORRECT_PARTITION_IMAGES := true
 TARGET_ENFORCES_QSSI := true
+
+# Platform
+TARGET_BOARD_PLATFORM := msm8953
 
 # Device Properties
 TARGET_ODM_PROP := $(DEVICE_PATH)/odm.prop
@@ -60,8 +62,6 @@ BOARD_ANT_WIRELESS_DEVICE := "vfs-prerelease"
 
 # Audio
 # for TFA98XX {
-USE_DEVICE_SPECIFIC_AUDIO := true
-DEVICE_SPECIFIC_AUDIO_PATH := $(DEVICE_PATH)/qcom-caf/audio
 AUDIO_FEATURE_ENABLED_TFA98XX := true
 TFA98XX_CTL_NAME := "QUIN_MI2S_RX Audio Mixer MultiMedia1"
 TFA98XX_LIB_NAME := "libtfa9895.so"
@@ -72,22 +72,14 @@ TFA98XX_FUNC_SPEAKEROFF := "exTfa98xx_speakeroff"
 
 # Audio
 AUDIO_FEATURE_ENABLED_EXTENDED_COMPRESS_FORMAT := true
-AUDIO_FEATURE_ENABLED_PROXY_DEVICE := true
 AUDIO_USE_LL_AS_PRIMARY_OUTPUT := true
 BOARD_SUPPORTS_OPENSOURCE_STHAL := true
 BOARD_SUPPORTS_SOUND_TRIGGER := true
 BOARD_USES_ALSA_AUDIO := true
-USE_CUSTOM_AUDIO_POLICY := 1
 
 # Bootloader
 TARGET_BOOTLOADER_BOARD_NAME := MSM8953
 TARGET_NO_BOOTLOADER := true
-
-# Bluetooth
-BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := $(DEVICE_PATH)/bluetooth
-
-# Bootanimation
-TARGET_BOOTANIMATION_HALF_RES := true
 
 # Camera
 BOARD_QTI_CAMERA_32BIT_ONLY := true
@@ -96,8 +88,6 @@ TARGET_TS_MAKEUP := true
 MALLOC_SVELTE_FOR_LIBC32 := true
 
 # Display
-USE_DEVICE_SPECIFIC_DISPLAY := true
-DEVICE_SPECIFIC_DISPLAY_PATH := $(DEVICE_PATH)/qcom-caf/display
 TARGET_SCREEN_DENSITY := 420
 TARGET_USES_ION := true
 TARGET_USES_GRALLOC1 := true
@@ -119,11 +109,12 @@ TARGET_FS_CONFIG_GEN := $(DEVICE_PATH)/config.fs
 BOARD_HAVE_QCOM_FM := true
 
 # GPS
-BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE := $(TARGET_BOARD_PLATFORM)
+BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE := default
+LOC_HIDL_VERSION := 4.0
 
 # HIDL
 DEVICE_MANIFEST_FILE := $(DEVICE_PATH)/manifest.xml
-DEVICE_MATRIX_FILE   := $(DEVICE_PATH)/compatibility_matrix.xml
+DEVICE_MATRIX_FILE   := hardware/qcom-caf/common/compatibility_matrix.xml
 
 # Init
 TARGET_INIT_VENDOR_LIB := //$(DEVICE_PATH):libinit_YUREKA2

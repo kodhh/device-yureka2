@@ -17,9 +17,6 @@
 $(call inherit-product, vendor/yu/YUREKA2/YUREKA2-vendor.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/product_launched_with_m.mk)
 
-TARGET_BOARD_PLATFORM := msm8953
-TARGET_BOARD_SUFFIX := _64
-
 PRODUCT_OTA_ENFORCE_VINTF_KERNEL_REQUIREMENTS := true
 
 # Overlays
@@ -94,11 +91,21 @@ PRODUCT_PACKAGES += \
     android.hardware.audio.service \
     android.hardware.soundtrigger@2.1-impl:32 \
     audio.bluetooth.default \
+    audio.primary.msm8953:32 \
     audio.r_submix.default \
     audio.usb.default \
     libaacwrapper \
     libaudio-resampler:32 \
+    libqcomvisualizer:32 \
+    libqcomvoiceprocessing:32 \
+    libqcompostprocbundle:32 \
     sound_trigger.primary.msm8953:32
+
+# Audio features
+PRODUCT_PACKAGES += \
+    libhfp:32 \
+    libsndmonitor:32 \
+    libspkrprot:32
 
 # Audio configuration
 PRODUCT_COPY_FILES += \
@@ -190,16 +197,25 @@ PRODUCT_PACKAGES += \
     android.hardware.graphics.mapper@2.0-impl-2.1 \
     android.hardware.memtrack@1.0-impl \
     android.hardware.memtrack@1.0-service \
+    gralloc.msm8953 \
+    hwcomposer.msm8953 \
     libgralloc.system.qti \
     libqdMetaData.system \
     libtinyxml \
     libvulkan \
+    memtrack.msm8953 \
     vendor.display.config@1.0.vendor \
     vendor.qti.hardware.display.mapper@2.0.vendor
 
 # Device-specific settings
 PRODUCT_PACKAGES += \
     XiaomiParts
+
+TARGET_EXCLUDES_AUDIOFX := true
+
+PRODUCT_COPY_FILES += \
+    prebuilts/vndk/v33/arm/arch-arm-armv7-a-neon/shared/vndk-core/libstagefright_foundation.so:$(TARGET_COPY_OUT_VENDOR)/lib/libstagefright_foundation-v33.so \
+    prebuilts/vndk/v33/arm64/arch-arm64-armv8-a/shared/vndk-core/libstagefright_foundation.so:$(TARGET_COPY_OUT_VENDOR)/lib64/libstagefright_foundation-v33.so
 
 # DRM
 PRODUCT_PACKAGES += \
@@ -338,7 +354,12 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libc2dcolorconvert \
     libmm-omxcore \
+    libOmxAacEnc \
+    libOmxAmrEnc \
     libOmxCore \
+    libOmxEvrcEnc \
+    libOmxG711Enc \
+    libOmxQcelp13Enc \
     libOmxVdec \
     libOmxVenc \
     libstagefrighthw \
