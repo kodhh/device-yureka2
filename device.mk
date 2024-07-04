@@ -173,7 +173,6 @@ PRODUCT_PACKAGES += \
     camera.msm8953 \
     libcamshim \
     libgui_vendor \
-    libion.vendor \
     vendor.qti.hardware.camera.device@1.0 \
     vendor.qti.hardware.camera.device@1.0.vendor \
     GoogleCameraGo
@@ -215,10 +214,6 @@ PRODUCT_PACKAGES += \
     XiaomiParts
 
 TARGET_EXCLUDES_AUDIOFX := true
-
-PRODUCT_COPY_FILES += \
-    prebuilts/vndk/v33/arm/arch-arm-armv7-a-neon/shared/vndk-core/libstagefright_foundation.so:$(TARGET_COPY_OUT_VENDOR)/lib/libstagefright_foundation-v33.so \
-    prebuilts/vndk/v33/arm64/arch-arm64-armv8-a/shared/vndk-core/libstagefright_foundation.so:$(TARGET_COPY_OUT_VENDOR)/lib64/libstagefright_foundation-v33.so
 
 # DRM
 PRODUCT_PACKAGES += \
@@ -291,6 +286,7 @@ PRODUCT_PACKAGES += \
     android.hidl.base@1.0.vendor\
     android.hidl.manager@1.0 \
     android.hidl.memory@1.0.vendor \
+    libhidlmemory \
     libhidlmemory.vendor \
     libhidltransport \
     libhidltransport.vendor \
@@ -425,7 +421,7 @@ PRODUCT_PACKAGES += \
     android.hardware.secure_element@1.2.vendor \
     libnetutils.vendor \
     librmnetctl \
-    libsqlite.vendor \
+    libsqlite.vendor:64 \
     qti-telephony-hidl-wrapper \
     qti_telephony_hidl_wrapper.xml \
     qti-telephony-utils \
@@ -446,8 +442,8 @@ PRODUCT_PACKAGES += \
     android.frameworks.sensorservice@1.0.vendor \
     android.hardware.sensors@1.0-impl:64 \
     android.hardware.sensors@1.0-service \
-    libsensorndkbridge:64 \
-    libpower.vendor
+    libpower.vendor \
+    libsensorndkbridge:64
 
 # Thermal
 PRODUCT_COPY_FILES += \
@@ -465,7 +461,9 @@ PRODUCT_SOONG_NAMESPACES += \
     vendor/qcom/opensource/usb/etc
 
 PRODUCT_PACKAGES += \
-    android.hardware.usb@1.3-service.basic
+    usb_compositions.conf \
+    android.hardware.usb@1.3-service.basic \
+    android.hardware.usb.gadget@1.2-service-qti
 
 # vndservicemanager
 PRODUCT_PACKAGES += \
@@ -505,7 +503,6 @@ PRODUCT_PACKAGES += \
     libwpa_client:64 \
     hostapd \
     libwifi-hal-qcom:64 \
-    TetheringConfigOverlay \
     WifiOverlay \
     wpa_supplicant \
     wpa_supplicant.conf
@@ -515,3 +512,9 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/wifi/wpa_supplicant_overlay.conf:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/wpa_supplicant_overlay.conf \
     $(LOCAL_PATH)/wifi/WCNSS_cfg.dat:$(TARGET_COPY_OUT_SYSTEM)/etc/firmware/wlan/prima/WCNSS_cfg.dat \
     $(LOCAL_PATH)/wifi/WCNSS_qcom_cfg.ini:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_cfg.ini
+
+# Wifi firmware symlinks
+PRODUCT_PACKAGES += \
+    firmware_WCNSS_qcom_cfg.ini_symlink \
+    firmware_WCNSS_qcom_wlan_nv.bin_symlink \
+    firmware_WCNSS_wlan_dictionary.dat_symlink
