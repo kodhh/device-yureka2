@@ -227,6 +227,7 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     android.hardware.biometrics.fingerprint@2.1-service.xiaomi_mido \
     fakelogprint \
+    liblzma.vendor:64 \
     libshims_gxfpd
 
 # FM
@@ -267,6 +268,9 @@ PRODUCT_PACKAGES += \
     libgeofencing \
     libloc_core \
     libgnss
+
+PRODUCT_PACKAGES += \
+    libloc_net_iface.vendor
 
 # Health
 PRODUCT_PACKAGES += \
