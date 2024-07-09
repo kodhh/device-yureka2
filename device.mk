@@ -279,13 +279,10 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/org.lineageos.health.excluded.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/org.lineageos.health.excluded.xml
 
 # HIDL
-PRODUCT_ENFORCE_VINTF_MANIFEST_OVERRIDE := true
-
 PRODUCT_PACKAGES += \
-    android.hidl.allocator@1.0.vendor \
+    android.hidl.allocator@1.0 \
     android.hidl.base@1.0 \
-    android.hidl.base@1.0.vendor\
-    android.hidl.manager@1.0 \
+    android.hidl.memory@1.0 \
     android.hidl.memory@1.0.vendor \
     libhidlmemory \
     libhidlmemory.vendor \
