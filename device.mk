@@ -426,7 +426,7 @@ PRODUCT_PACKAGES += \
     qti_telephony_utils.xml
 
 PRODUCT_PACKAGES += \
-    android.hardware.radio.config@1.1-service.wrapper
+    android.hardware.radio.config@1.0-service
 
 # Sensors
 PRODUCT_COPY_FILES += \
@@ -456,9 +456,7 @@ PRODUCT_SOONG_NAMESPACES += \
     vendor/qcom/opensource/usb/etc
 
 PRODUCT_PACKAGES += \
-    usb_compositions.conf \
-    android.hardware.usb@1.3-service.basic \
-    android.hardware.usb.gadget@1.2-service-qti
+    android.hardware.usb@1.3-service.basic
 
 # vndservicemanager
 PRODUCT_PACKAGES += \
