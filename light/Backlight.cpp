@@ -31,7 +31,7 @@ class BacklightBrightness : public BacklightDevice {
     std::string mBasePath;
     uint32_t mMaxBrightness;
 
-    inline static const std::string mkBacklightBasePath = "/sys/class/backlight/";
+    inline static const std::string mkBacklightBasePath = "/sys/class/leds/";
     inline static const uint32_t kDefaultMaxBrightness = 255;
 };
 

@@ -24,7 +24,6 @@ enum led_type {
     RED,
     GREEN,
     BLUE,
-    WHITE,
     MAX_LEDS,
 };
 
@@ -32,7 +31,6 @@ static LED kLEDs[MAX_LEDS] = {
         [RED] = LED("red"),
         [GREEN] = LED("green"),
         [BLUE] = LED("blue"),
-        [WHITE] = LED("white"),
 };
 
 #define AutoHwLight(light) \
@@ -51,8 +49,6 @@ Lights::Lights() {
     }
 
     if (!mButtonsPaths.empty()) mLights.push_back(AutoHwLight(LightType::BUTTONS));
-
-    mWhiteLED = kLEDs[WHITE].exists();
 
     mLights.push_back(AutoHwLight(LightType::BATTERY));
     mLights.push_back(AutoHwLight(LightType::NOTIFICATIONS));
@@ -117,23 +113,16 @@ void Lights::setLED() {
     switch (state.flashMode) {
         case FlashMode::HARDWARE:
         case FlashMode::TIMED:
-            if (mWhiteLED) {
-                rc = kLEDs[WHITE].setBreath(blink);
-            } else {
-                rc = kLEDs[RED].setBreath(blink && color.red);
-                rc &= kLEDs[GREEN].setBreath(blink && color.green);
-                rc &= kLEDs[BLUE].setBreath(blink && color.blue);
-            }
+            rc = kLEDs[RED].setBreath(blink && color.red);
+            rc &= kLEDs[GREEN].setBreath(blink && color.green);
+            rc &= kLEDs[BLUE].setBreath(blink && color.blue);
+
             if (rc) break;
             FALLTHROUGH_INTENDED;
         default:
-            if (mWhiteLED) {
-                rc = kLEDs[WHITE].setBrightness(color.toBrightness());
-            } else {
-                rc = kLEDs[RED].setBrightness(color.red);
-                rc &= kLEDs[GREEN].setBrightness(color.green);
-                rc &= kLEDs[BLUE].setBrightness(color.blue);
-            }
+            rc = kLEDs[RED].setBrightness(color.red);
+            rc &= kLEDs[GREEN].setBrightness(color.green);
+            rc &= kLEDs[BLUE].setBrightness(color.blue);
             break;
     }
 
