@@ -20,6 +20,9 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/product_launched_with_m.mk)
 # Add common definitions for Qualcomm
 $(call inherit-product, hardware/qcom-caf/common/common.mk)
 
+TARGET_BOARD_PLATFORM := msm8953
+TARGET_BOARD_SUFFIX := _64
+
 PRODUCT_OTA_ENFORCE_VINTF_KERNEL_REQUIREMENTS := true
 
 # Overlays
@@ -275,9 +278,6 @@ PRODUCT_PACKAGES += \
     android.hardware.health-service.qti \
     android.hardware.health-service.qti_recovery
 
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/org.lineageos.health.excluded.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/org.lineageos.health.excluded.xml
-
 # HIDL
 PRODUCT_PACKAGES += \
     android.hidl.allocator@1.0 \
@@ -496,6 +496,7 @@ PRODUCT_PACKAGES += \
     libwpa_client:64 \
     hostapd \
     libwifi-hal-qcom:64 \
+    wcnss_service \
     WifiOverlay \
     wpa_supplicant \
     wpa_supplicant.conf
