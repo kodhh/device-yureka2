@@ -1,2 +1,4 @@
+allow shell sysfs_leds:dir r_dir_perms;
+
 # Zygote
 allow shell zygote:unix_stream_socket getopt;
