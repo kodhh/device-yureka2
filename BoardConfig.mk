@@ -44,7 +44,9 @@ TARGET_VENDOR_PROP := $(DEVICE_PATH)/vendor.prop
 # Kernel
 TARGET_KERNEL_CONFIG := vendor/YUREKA2_defconfig
 BOARD_KERNEL_BASE := 0x80000000
+# Add console=ttyGS0,115200 for usb g serial debugging
 BOARD_KERNEL_CMDLINE := androidboot.hardware=qcom msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 androidboot.bootdevice=7824900.sdhci earlycon=msm_hsl_uart,0x78af000 loop.max_part=16 androidboot.usbconfigfs=true
+
 BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb
 BOARD_KERNEL_PAGESIZE :=  2048
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01000000 --tags_offset 0x00000100
@@ -88,9 +90,6 @@ TARGET_BOOTANIMATION_HALF_RES := true
 # Camera
 BOARD_QTI_CAMERA_32BIT_ONLY := true
 TARGET_TS_MAKEUP := true
-
-# Crypto
-TARGET_HW_DISK_ENCRYPTION := true
 
 # Display
 USE_DEVICE_SPECIFIC_DISPLAY := true
