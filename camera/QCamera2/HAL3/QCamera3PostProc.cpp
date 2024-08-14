@@ -2353,17 +2353,17 @@ QCamera3Exif *QCamera3PostProcessor::getExifData(metadata_buffer_t *metadata,
     rc = getExifDateTime(dateTime, subsecTime);
     if (rc == NO_ERROR) {
         exif->addEntry(EXIFTAGID_DATE_TIME, EXIF_ASCII,
-                (uint32_t)(dateTime.length() + 1), (void *)dateTime.string());
+                (uint32_t)(dateTime.length() + 1), (void *)dateTime.c_str());
         exif->addEntry(EXIFTAGID_EXIF_DATE_TIME_ORIGINAL, EXIF_ASCII,
-                (uint32_t)(dateTime.length() + 1), (void *)dateTime.string());
+                (uint32_t)(dateTime.length() + 1), (void *)dateTime.c_str());
         exif->addEntry(EXIFTAGID_EXIF_DATE_TIME_DIGITIZED, EXIF_ASCII,
-                (uint32_t)(dateTime.length() + 1), (void *)dateTime.string());
+                (uint32_t)(dateTime.length() + 1), (void *)dateTime.c_str());
         exif->addEntry(EXIFTAGID_SUBSEC_TIME, EXIF_ASCII,
-                (uint32_t)(subsecTime.length() + 1), (void *)subsecTime.string());
+                (uint32_t)(subsecTime.length() + 1), (void *)subsecTime.c_str());
         exif->addEntry(EXIFTAGID_SUBSEC_TIME_ORIGINAL, EXIF_ASCII,
-                (uint32_t)(subsecTime.length() + 1), (void *)subsecTime.string());
+                (uint32_t)(subsecTime.length() + 1), (void *)subsecTime.c_str());
         exif->addEntry(EXIFTAGID_SUBSEC_TIME_DIGITIZED, EXIF_ASCII,
-                (uint32_t)(subsecTime.length() + 1), (void *)subsecTime.string());
+                (uint32_t)(subsecTime.length() + 1), (void *)subsecTime.c_str());
     } else {
         LOGW("getExifDateTime failed");
     }
@@ -2383,26 +2383,6 @@ QCamera3Exif *QCamera3PostProcessor::getExifData(metadata_buffer_t *metadata,
             }
         }
 
-        IF_META_AVAILABLE(int32_t, isoSpeed, CAM_INTF_META_SENSOR_SENSITIVITY, metadata) {
-            int16_t fwk_isoSpeed = (int16_t) *isoSpeed;
-            exif->addEntry(EXIFTAGID_ISO_SPEED_RATING, EXIF_SHORT, 1, (void *) &(fwk_isoSpeed));
-        }
-
-
-        IF_META_AVAILABLE(int64_t, sensor_exposure_time,
-                CAM_INTF_META_SENSOR_EXPOSURE_TIME, metadata) {
-            rat_t sensorExpTime;
-            rc = getExifExpTimeInfo(&sensorExpTime, *sensor_exposure_time);
-            if (rc == NO_ERROR){
-                exif->addEntry(EXIFTAGID_EXPOSURE_TIME,
-                        EXIF_RATIONAL,
-                        1,
-                        (void *)&(sensorExpTime));
-            } else {
-                LOGW("getExifExpTimeInfo failed");
-            }
-        }
-
         char* jpeg_gps_processing_method = jpeg_settings->gps_processing_method;
         if (strlen(jpeg_gps_processing_method) > 0) {
             char gpsProcessingMethod[EXIF_ASCII_PREFIX_SIZE +
@@ -2413,7 +2393,7 @@ QCamera3Exif *QCamera3PostProcessor::getExifData(metadata_buffer_t *metadata,
                     jpeg_gps_processing_method);
             if(rc == NO_ERROR) {
                 exif->addEntry(EXIFTAGID_GPS_PROCESSINGMETHOD,
-                        EXIF_ASCII,
+                        EXIFTAGTYPE_GPS_PROCESSINGMETHOD,
                         count,
                         (void *)gpsProcessingMethod);
             } else {

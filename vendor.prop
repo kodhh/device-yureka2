@@ -1,5 +1,5 @@
 #
-# vendor.prop for YUREKA2
+# vendor.prop for mido
 #
 
 # Audio
@@ -51,8 +51,10 @@ vendor.audio.feature.multi_voice_session.enable=true
 vendor.audio.feature.snd_mon.enable=true
 vendor.audio.feature.spkr_prot.enable=true
 vendor.audio.feature.src_trkn.enable=true
-vendor.audio.feature.vbat.enable=true
-vendor.audio.feature.wsa.enable=true
+
+# Audio (Dolby)
+persist.vendor.audio_fx.current=dolby
+ro.vendor.dolby.dax.version=DS1_2.2.0.0_r1
 
 # Bluetooth
 persist.vendor.qcom.bluetooth.soc=pronto
@@ -79,8 +81,11 @@ ro.hardware.vulkan=adreno
 ro.hardware.egl=adreno
 ro.opengles.version=196610
 ro.vendor.display.cabl=2
+vendor.display.disable_metadata_dynamic_fps=1
+vendor.display.disable_partial_split=1
 vendor.display.disable_rotator_downscale=1
 vendor.display.disable_skip_validate=1
+vendor.display.perf_hint_window=50
 vendor.gralloc.enable_fb_ubwc=1
 
 # DPM
@@ -95,8 +100,12 @@ vendor.hw.fm.init=0
 # Frp
 ro.frp.pst=/dev/block/bootdevice/by-name/config
 
+# HEH filename encryption is being dropped
+ro.crypto.volume.filenames_mode=aes-256-cts
+
 # Media
 debug.stagefright.omx_default_rank=0
+debug.stagefright.omx_default_rank.sw-audio=16
 vendor.vidc.disable.split.mode=1
 
 # Perf
@@ -110,6 +119,7 @@ ro.se.type=HCE,UICC
 # Radio
 persist.radio.multisim.config=dsds
 persist.vendor.data.iwlan.enable=true
+persist.vendor.data.profile_update=true
 persist.vendor.radio.add_power_save=1
 persist.vendor.radio.apm_sim_not_pwdn=1
 persist.vendor.radio.custom_ecc=1
@@ -119,7 +129,6 @@ persist.vendor.radio.mt_sms_ack=30
 persist.vendor.radio.procedure_bytes=SKIP
 persist.vendor.radio.rat_on=combine
 persist.vendor.radio.sib16_support=1
-vendor.rild.libargs=-d /dev/smd0
 
 # SOC
 ro.soc.manufacturer=Qualcomm
