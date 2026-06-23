@@ -8,8 +8,6 @@ LOCAL_CFLAGS+= -D_ANDROID_ -DQCAMERA_REDEFINE_LOG
 
 LOCAL_CFLAGS += -Wall -Wextra -Werror -Wno-unused-parameter
 
-LOCAL_HEADER_LIBRARIES += generated_kernel_headers
-
 ifneq ($(TARGET_KERNEL_VERSION),$(filter $(TARGET_KERNEL_VERSION),3.18 4.4 4.9))
   ifneq ($(LIBION_HEADER_PATH_WRAPPER), )
     include $(LIBION_HEADER_PATH_WRAPPER)
@@ -20,6 +18,8 @@ ifneq ($(TARGET_KERNEL_VERSION),$(filter $(TARGET_KERNEL_VERSION),3.18 4.4 4.9))
             $(TOP)/system/core/libion/kernel-headers
   endif
 endif
+
+LOCAL_HEADER_LIBRARIES += generated_kernel_headers
 
 IMGLIB_HEADER_PATH := $(TARGET_OUT_INTERMEDIATES)/include/mm-camera/imglib
 

@@ -88,8 +88,6 @@ persist.vendor.dpmhalservice.enable=1
 # DRM
 drm.service.enabled=true
 
-# Fm
-vendor.hw.fm.init=0
 
 # Frp
 ro.frp.pst=/dev/block/bootdevice/by-name/config
@@ -130,15 +128,11 @@ ro.soc.model=SDM450
 net.tcp.2g_init_rwnd=10
 
 # USB
-ro.usb.uvc.enabled=true
 vendor.usb.controller=7000000.dwc3
 vendor.usb.diag.func.name=diag
-vendor.usb.use_ffs_mtp=1
+vendor.usb.use_ffs_mtp=0
+vendor.usb.use_gadget_hal=0
 sys.usb.mtp.batchcancel=1
-vendor.usb.use_gadget_hal=1
-
-# Wifi
-wifi.interface=wlan0
 
 # Wifi-Display
 persist.sys.wfd.virtual=0

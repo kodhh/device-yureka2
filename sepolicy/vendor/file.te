@@ -19,7 +19,7 @@ type proc_touchpanel, fs_type, sysfs_type, proc_type;
 # msm_subsys
 type sysfs_subsys, sysfs_type, fs_type;
 
-# XiaomiParts
+# DeviceParts
 type sysfs_hgain, sysfs_type, fs_type;
 type sysfs_mgain, sysfs_type, fs_type;
 type sysfs_sgain, sysfs_type, fs_type;
