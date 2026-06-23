@@ -15,7 +15,7 @@
 #
 
 $(call inherit-product, vendor/yu/YUREKA2/YUREKA2-vendor.mk)
-$(call inherit-product, $(SRC_TARGET_DIR)/product/product_launched_with_m.mk)
+$(call inherit-product, $(SRC_TARGET_DIR)/product/product_launched_with_o_mr1.mk)
 
 # Add common definitions for Qualcomm
 $(call inherit-product, hardware/qcom-caf/common/common.mk)
@@ -42,7 +42,8 @@ PRODUCT_ENFORCE_RRO_TARGETS := *
 
 # Soong namespaces
 PRODUCT_SOONG_NAMESPACES += \
-    $(LOCAL_PATH)
+    $(LOCAL_PATH) \
+    bootable/deprecated-ota
 
 # Permissions
 PRODUCT_COPY_FILES += \
@@ -95,12 +96,11 @@ PRODUCT_PACKAGES += \
     android.hardware.audio@7.1-impl:32 \
     android.hardware.audio.effect@7.0-impl:32 \
     android.hardware.audio.service \
-    android.hardware.soundtrigger@2.1-impl:32 \
+    android.hardware.soundtrigger@2.3-impl:32 \
     audio.bluetooth.default \
     audio.primary.msm8953:32 \
     audio.r_submix.default \
     audio.usb.default \
-    libaacwrapper \
     libaudio-resampler:32 \
     libqcomvisualizer:32 \
     libqcomvoiceprocessing:32 \
@@ -161,9 +161,6 @@ PRODUCT_PACKAGES += \
 
 # Camera
 PRODUCT_PACKAGES += \
-    android.frameworks.displayservice@1.0.vendor \
-    android.hidl.base@1.0.vendor \
-    android.hardware.camera.device@3.5 \
     android.hardware.camera.provider@2.4 \
     android.hardware.camera.provider@2.4-external \
     android.hardware.camera.provider@2.4-impl \
@@ -196,6 +193,8 @@ PRODUCT_PACKAGES += \
 
 # Display
 PRODUCT_PACKAGES += \
+    android.frameworks.displayservice@1.0.vendor \
+    android.hardware.camera.device@3.5 \
     android.hardware.graphics.allocator@2.0-impl:64 \
     android.hardware.graphics.allocator@2.0-service \
     android.hardware.graphics.composer@2.1-service \
@@ -322,7 +321,7 @@ PRODUCT_PACKAGES += \
 
 # Lights
 PRODUCT_PACKAGES += \
-    android.hardware.light-service.xiaomi_mido
+    android.hardware.light-service.lineage
 
 # LiveDisplay
 PRODUCT_PACKAGES += \
@@ -387,6 +386,9 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     libjson
 
+# Init
+$(call soong_config_set,libinit,vendor_init_lib,//$(LOCAL_PATH):libinit_YUREKA2)
+
 # Ramdisk
 PRODUCT_PACKAGES += \
     fstab.qcom \
@@ -440,7 +442,7 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/thermal-engine.conf:$(TARGET_COPY_OUT_VENDOR)/etc/thermal-engine.conf
 
 PRODUCT_PACKAGES += \
-    android.hardware.thermal@2.0-service.qti.xiaomi_mido
+    android.hardware.thermal-service.qti.YUREKA2
 
 # Touch features
 PRODUCT_PACKAGES += \

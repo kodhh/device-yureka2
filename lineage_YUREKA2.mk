@@ -14,7 +14,11 @@
 # limitations under the License.
 #
 
+# Inherit from those products. Most specific first.
+$(call inherit-product, $(SRC_TARGET_DIR)/product/non_ab_device.mk)
+
 # Inherit from YUREKA2 device
+AB_OTA_UPDATER := false
 $(call inherit-product, device/yu/YUREKA2/full_YUREKA2.mk)
 
 # Inherit some common LineageOS stuff.
@@ -28,7 +32,6 @@ PRODUCT_DEVICE := YUREKA2
 PRODUCT_GMS_CLIENTID_BASE := android-micromax
 
 PRODUCT_BUILD_PROP_OVERRIDES += \
-    PRODUCT_NAME=YUREKA2 \
-    PRIVATE_BUILD_DESC="wt89536-user 6.0.1 MMB29M eng.zhouchao.20170723.172948 release-keys"
-
-BUILD_FINGERPRINT := YU/YUREKA2/YUREKA2:6.0.1/MMB29M/01112051:user/release-keys
+    BuildDesc="YUREKA2-user 7.0 NRD90M release-keys" \
+    BuildFingerprint="YU/YUREKA2/YUREKA2:7.0/NRD90M/eng.zhouchao.20170723.172948:user/release-keys" \
+    DeviceProduct=YUREKA2

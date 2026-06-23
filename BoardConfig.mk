@@ -46,7 +46,7 @@ TARGET_VENDOR_PROP := $(DEVICE_PATH)/vendor.prop
 # Kernel
 TARGET_KERNEL_CONFIG := vendor/YUREKA2_defconfig
 BOARD_KERNEL_BASE := 0x80000000
-BOARD_KERNEL_CMDLINE := androidboot.hardware=qcom msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 androidboot.bootdevice=7824900.sdhci earlycon=msm_hsl_uart,0x78af000 loop.max_part=7 androidboot.usbcontroller=7000000.dwc3 cgroup_disable=pressure
+BOARD_KERNEL_CMDLINE := androidboot.hardware=qcom msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 androidboot.bootdevice=7824900.sdhci earlycon=msm_hsl_uart,0x78af000 loop.max_part=7 androidboot.usbconfigfs=true cgroup_disable=pressure
 BOARD_KERNEL_CMDLINE += androidboot.boot_devices=soc/7824900.sdhci
 BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb
 BOARD_KERNEL_PAGESIZE :=  2048
@@ -108,20 +108,14 @@ BOARD_HAVE_QCOM_FM := true
 
 # GPS
 BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE := default
-LOC_HIDL_VERSION := 4.0
 
 # HIDL
 DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE := \
     hardware/qcom-caf/common/vendor_framework_compatibility_matrix.xml \
-    hardware/qcom-caf/common/vendor_framework_compatibility_matrix_legacy.xml \
     vendor/lineage/config/device_framework_matrix.xml \
     $(DEVICE_PATH)/nxpnfc_compat_framework_matrix.xml
 DEVICE_MANIFEST_FILE := $(DEVICE_PATH)/manifest.xml
 DEVICE_MATRIX_FILE   := hardware/qcom-caf/common/compatibility_matrix.xml
-
-# Init
-TARGET_INIT_VENDOR_LIB := //$(DEVICE_PATH):libinit_YUREKA2
-TARGET_RECOVERY_DEVICE_MODULES := libinit_YUREKA2
 
 # IPA
 USE_DEVICE_SPECIFIC_DATA_IPA_CFG_MGR := true
@@ -142,6 +136,7 @@ TARGET_HEALTH_CHARGING_CONTROL_SUPPORTS_DEADLINE := false
 # Partitions
 BOARD_BOOTIMAGE_PARTITION_SIZE := 67108864
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 2679103488
+BOARD_SYSTEMIMAGE_JOURNAL_SIZE := 0
 BOARD_PERSISTIMAGE_PARTITION_SIZE := 33554432
 BOARD_FLASH_BLOCK_SIZE := 131072 # (BOARD_KERNEL_PAGESIZE * 64)
 BOARD_CACHEIMAGE_PARTITION_SIZE := 268435456
@@ -167,7 +162,7 @@ ENABLE_VENDOR_RIL_SERVICE := true
 TARGET_USES_OLD_MNC_FORMAT := true
 
 # Security patch level
-VENDOR_SECURITY_PATCH := 2023-12-05
+VENDOR_SECURITY_PATCH := 2024-11-05
 
 # SELinux
 include device/qcom/sepolicy-legacy-um/SEPolicy.mk
@@ -176,7 +171,6 @@ SYSTEM_EXT_PRIVATE_SEPOLICY_DIRS += $(DEVICE_PATH)/sepolicy/private
 
 # Treble
 PRODUCT_FULL_TREBLE_OVERRIDE := true
-BOARD_VNDK_VERSION := current
 
 # Wi-Fi
 BOARD_HOSTAPD_DRIVER := NL80211
@@ -184,11 +178,13 @@ BOARD_HOSTAPD_PRIVATE_LIB := lib_driver_cmd_qcwcn
 BOARD_WLAN_DEVICE := qcwcn
 BOARD_WPA_SUPPLICANT_DRIVER := NL80211
 BOARD_WPA_SUPPLICANT_PRIVATE_LIB := lib_driver_cmd_qcwcn
+PRODUCT_VENDOR_MOVE_ENABLED := true
+TARGET_USES_QCOM_WCNSS_QMI := true
+TARGET_WCNSS_QMI_INCLUDE_DIR := $(DEVICE_PATH)/wifi/include
 WIFI_DRIVER_FW_PATH_AP := "ap"
 WIFI_DRIVER_FW_PATH_STA := "sta"
 WIFI_HIDL_UNIFIED_SUPPLICANT_SERVICE_RC_ENTRY := true
 WPA_SUPPLICANT_VERSION := VER_0_8_X
-PRODUCT_VENDOR_MOVE_ENABLED := true
 
 # Inherit from the proprietary version
 -include vendor/yu/YUREKA2/BoardConfigVendor.mk
