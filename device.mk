@@ -293,8 +293,6 @@ PRODUCT_PACKAGES += \
 # IMS
 PRODUCT_PACKAGES += \
     CarrierConfigOverlay \
-    ims-ext-common \
-    ims_ext_common.xml \
     libgui_shim:64
 
 # Inherit several Android Go Configurations(Beneficial for everyone, even on non-Go devices)
@@ -409,19 +407,33 @@ PRODUCT_PACKAGES += \
     init.uclamp.rc \
     ueventd.qcom.rc
 
-# RIL
+# Telephony
 PRODUCT_PACKAGES += \
     android.hardware.radio@1.5.vendor \
     android.hardware.radio.config@1.2.vendor \
     android.hardware.radio.deprecated@1.0.vendor \
     android.hardware.secure_element@1.2.vendor \
+    extphonelib \
+    extphonelib-product \
+    extphonelib.xml \
+    extphonelib_product.xml \
+    ims-ext-common \
+    ims_ext_common.xml \
     libnetutils.vendor \
     librmnetctl \
     libsqlite.vendor:64 \
     qti-telephony-hidl-wrapper \
+    qti-telephony-hidl-wrapper-prd \
     qti_telephony_hidl_wrapper.xml \
+    qti_telephony_hidl_wrapper_prd.xml \
     qti-telephony-utils \
-    qti_telephony_utils.xml
+    qti-telephony-utils-prd \
+    qti_telephony_utils.xml \
+    qti_telephony_utils_prd.xml \
+    telephony-ext
+
+PRODUCT_BOOT_JARS += \
+    telephony-ext
 
 PRODUCT_PACKAGES += \
     android.hardware.radio.config@1.0-service
